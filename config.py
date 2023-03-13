@@ -17,7 +17,7 @@ else:
 
 
 # hyperparameters
-num_workers = 8
+num_workers = 4
 batch_size = 96
 
 # training related
