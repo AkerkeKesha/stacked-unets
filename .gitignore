@@ -1,4 +1,7 @@
+# project specific
+dataset/
+
 .venv/
 .idea/
 .DS_Store
- .ipynb_checkpoints/
+.ipynb_checkpoints/
