@@ -39,23 +39,26 @@ def train(num_epochs):
         # Take the average losses
         training_loss = training_loss / len(train_loader)
         train_losses.append(training_loss)
-
-    model.eval()
-    iou_metric = IntersectionOverUnion(num_classes=2)
-    with torch.no_grad():
-        for batch in tqdm(val_loader):
-            image = batch["image"].to(device)
-            mask = batch["mask"].to(device)
-            pred = model(image)
-            loss = criterion(pred, mask)
-            val_loss = loss.item()
-            iou_metric.update(pred.detach().cpu().numpy(), mask.cpu().numpy())
-        mean_iou = iou_metric.mean_iou()
-        print(f"Val mean IoU = {mean_iou:.4f}")
-        iou_metric.reset()
-        # Take the average losses
-        val_loss = val_loss / len(val_loader)
-        val_losses.append(val_loss)
+        model.eval()
+        iou_metric = IntersectionOverUnion(num_classes=2)
+        with torch.no_grad():
+            for batch in tqdm(val_loader):
+                image = batch["image"].to(device)
+                mask = batch["mask"].to(device)
+                pred = model(image)
+                loss = criterion(pred, mask)
+                val_loss = loss.item()
+                iou_metric.update(pred.detach().cpu().numpy(), mask.cpu().numpy())
+            mean_iou = iou_metric.mean_iou()
+            print(f"Val mean IoU = {mean_iou:.4f}")
+            iou_metric.reset()
+            # Take the average losses
+            val_loss = val_loss / len(val_loader)
+            val_losses.append(val_loss)
 
     torch.save(model.state_dict(), "output/single_unet.pt")
     return train_losses, val_losses
+
+
+
+
