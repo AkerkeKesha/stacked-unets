@@ -39,4 +39,12 @@ When you're done working on the project, you can deactivate the virtual environm
 deactivate
 ```
 This will return the terminal prompt to its default state, indicating that you are no longer working in the virtual environment.
+Next, virtual environment can be installed as kernel in jupyter notebook
+```commandline
+python3 -m ipykernel install --user --name=env
+```
+Now, jupyter notebooks are viewed by:
 
+```commandline
+jupyter notebook
+```
