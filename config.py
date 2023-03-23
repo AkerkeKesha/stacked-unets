@@ -1,6 +1,5 @@
 import os
 
-
 is_colab = True
 
 if not is_colab:
@@ -23,5 +22,7 @@ batch_size = 96
 # training related
 learning_rate = 1e-3
 num_epochs = 10
+
+output_dir = os.path.join(project_root, 'output')
 
 
