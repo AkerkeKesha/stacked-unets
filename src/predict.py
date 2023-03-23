@@ -4,22 +4,18 @@ from dataset import ETCIDataset
 from model import create_single_unet
 import config
 from tqdm.notebook import tqdm
-from utils import create_df
-
-
-def get_test_df():
-    return create_df(config.test_dir, split="test")
+from utils import get_etci_df
 
 
 def predict():
     final_predictions = []
-    test_df = get_test_df()
+    test_df = get_etci_df(config.test_dir, split="test")
     test_dataset = ETCIDataset(test_df, split="test", transform=None)
     test_loader = DataLoader(test_dataset, batch_size=config.batch_size, shuffle=False, num_workers=config.num_workers)
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = create_single_unet()
-    model.load_state_dict(torch.load("output/single_unet.pt"))
+    model.load_state_dict(torch.load(f"{config.output_dir}/single_unet.pt"))
     model.to(device)
 
     model.eval()
