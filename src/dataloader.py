@@ -2,18 +2,24 @@ import albumentations as A
 import numpy as np
 from torch.utils.data import DataLoader
 from dataset import ETCIDataset
-from utils import create_df, get_logging
+from utils import get_etci_df, get_logging
 import config
+from sklearn.model_selection import train_test_split
+
+# original_df = create_df(config.train_dir, split="train")
+
+# train_df, val_df = train_test_split(original_df, test_size=0.2, stratify=original_df['region'])
 
 
 def get_loader():
+    # TODO: choose one region
     regions = ["nebraska", "northal", "bangladesh"]
 
     # randomly choose one for the validation set and leave the rest for training
     validation_region = np.random.choice(regions, 1)[0]
     regions.remove(validation_region)
 
-    original_df = create_df(config.train_dir, split="train")
+    original_df = get_etci_df(config.train_dir, split="train")
     train_df = original_df[original_df['region'] != validation_region]
     val_df = original_df[original_df['region'] == validation_region]
 
