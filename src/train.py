@@ -14,6 +14,7 @@ def train(num_epochs):
     model = create_single_unet()
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
+
     criterion = nn.CrossEntropyLoss()
     iou_metric = IntersectionOverUnion(num_classes=2)
     train_loader, val_loader = get_loader()
@@ -27,9 +28,11 @@ def train(num_epochs):
             image = batch["image"].to(device)
             mask = batch["mask"].to(device)
             pred = model(image)
+
             loss = criterion(pred, mask)
             optimizer.zero_grad()
             training_loss = loss.item()
+            # TODO: dont learn on wrong parts of the images, e.f. reg = 0, is land not water
             loss.backward()
             optimizer.step()
             iou_metric.update(pred.detach().cpu().numpy(), mask.cpu().numpy())
