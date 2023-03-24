@@ -3,15 +3,14 @@ import torch.nn as nn
 import config
 from tqdm.notebook import tqdm
 from model import create_single_unet
-from utils import get_logging
 from dataloader import get_loader
 from evaluate import IntersectionOverUnion
 
 
 def train(num_epochs):
-    logging = get_logging()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = create_single_unet()
+
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
 
