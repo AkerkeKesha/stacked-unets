@@ -23,7 +23,7 @@ batch_size = 96
 
 # training related
 learning_rate = 1e-3
-num_epochs = 10
+num_epochs = 5
 
 
 
