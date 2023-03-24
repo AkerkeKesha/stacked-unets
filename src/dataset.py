@@ -1,5 +1,6 @@
 import cv2
 import os
+import numpy as np
 from torch.utils.data import Dataset
 import utils
 from PIL import Image
@@ -32,7 +33,11 @@ class ETCIDataset(Dataset):
             example["image"] = rgb_image.transpose((2, 0, 1))
         else:
             flood_mask = cv2.imread(df_row["flood_label_path"], 0) / 255.0
-            water_mask = cv2.imread(df_row["water_body_label_path"], 0) / 255.0
+            try:
+                water_mask = cv2.imread(df_row["water_body_label_path"], 0) / 255.0
+            except KeyError:
+                print(f"{index}")
+
             if self.transform:
                 # augmented = self.transform(image=rgb_image, mask=flood_mask)
                 augmented = self.transform(image=rgb_image, mask=water_mask)
@@ -46,32 +51,36 @@ class ETCIDataset(Dataset):
         return example
 
 
-class SN6Dataset(Dataset):
-    def __init__(self, data_dir, transforms=None):
-        self.data_dir = data_dir
-        self.transforms = transforms
+# class SN6Dataset(Dataset):
+#     def __init__(self, data_dir, transforms=None):
+#         self.data_dir = data_dir
+#         self.transforms = transforms
+#
+#         # get list of image and mask files
+#         self.image_files = sorted(os.listdir(os.path.join(self.data_dir, "images")))
+#         self.mask_files = sorted(os.listdir(os.path.join(self.data_dir, "masks")))
+#
+#     def __getitem__(self, index):
+#         # load image and mask
+#         image_path = os.path.join(self.data_dir, "images", self.image_files[index])
+#         mask_path = os.path.join(self.data_dir, "masks", self.mask_files[index])
+#         image = np.array(Image.open(image_path).convert("RGB"))
+#         mask = np.array(Image.open(mask_path).convert("L"))
+#
+#         # apply transforms
+#         if self.transforms:
+#             transformed = self.transforms(image=image, mask=mask)
+#             image = transformed["image"]
+#             mask = transformed["mask"]
+#
+#         return image, mask
+#
+#     def __len__(self):
+#         return len(self.image_files)
 
-        # get list of image and mask files
-        self.image_files = sorted(os.listdir(os.path.join(self.data_dir, "images")))
-        self.mask_files = sorted(os.listdir(os.path.join(self.data_dir, "masks")))
 
-    def __getitem__(self, index):
-        # load image and mask
-        image_path = os.path.join(self.data_dir, "images", self.image_files[index])
-        mask_path = os.path.join(self.data_dir, "masks", self.mask_files[index])
-        image = np.array(Image.open(image_path).convert("RGB"))
-        mask = np.array(Image.open(mask_path).convert("L"))
 
-        # apply transforms
-        if self.transforms:
-            transformed = self.transforms(image=image, mask=mask)
-            image = transformed["image"]
-            mask = transformed["mask"]
 
-        return image, mask
-
-    def __len__(self):
-        return len(self.image_files)
 
 
 
