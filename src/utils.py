@@ -86,7 +86,6 @@ def visualize_image_and_masks(df_row, figure_size=(25, 15)):
     rgb_image = grayscale_to_rgb(vv_image, vh_image)
 
     water_body_label_image = cv2.imread(water_body_label_path, 0) / 255.0
-
     plt.figure(figsize=figure_size)
 
     if df_row.isnull().sum() > 0:
@@ -120,6 +119,8 @@ def visualize_prediction(df_row, prediction, figure_size=(25, 15)):
     vv_image = cv2.imread(df_row['vv_image_path'], 0) / 255.0
     vh_image = cv2.imread(df_row['vh_image_path'], 0) / 255.0
     rgb_input = grayscale_to_rgb(vv_image, vh_image)
+
+    water_body_label_path = df_row['water_body_label_path']
 
     plt.figure(figsize=figure_size)
     plt.subplot(1, 2, 1)
