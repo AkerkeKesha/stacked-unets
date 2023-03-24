@@ -32,7 +32,7 @@ class ETCIDataset(Dataset):
             example["image"] = rgb_image.transpose((2, 0, 1))
         else:
             flood_mask = cv2.imread(df_row["flood_label_path"], 0) / 255.0
-            water_mask = cv2.imread(df_row["water_label_path"], 0) / 255.0
+            water_mask = cv2.imread(df_row["water_body_label_path"], 0) / 255.0
             if self.transform:
                 # augmented = self.transform(image=rgb_image, mask=flood_mask)
                 augmented = self.transform(image=rgb_image, mask=water_mask)
