@@ -35,10 +35,10 @@ def train(num_epochs):
             loss.backward()
             optimizer.step()
             iou_metric.update(pred.detach().cpu().numpy(), mask.cpu().numpy())
+            tqdm(train_loader).set_description(f'Loss: {training_loss:1.4f}')
         mean_iou = iou_metric.mean_iou()
         print(f"Train mean IoU = {mean_iou:.4f}")
         iou_metric.reset()
-        # Take the average losses
         training_loss = training_loss / len(train_loader)
         train_losses.append(training_loss)
         model.eval()
@@ -51,10 +51,10 @@ def train(num_epochs):
                 loss = criterion(pred, mask)
                 val_loss = loss.item()
                 iou_metric.update(pred.detach().cpu().numpy(), mask.cpu().numpy())
+                tqdm(val_loader).set_description(f'Val Loss: {val_loss:1.4f}')
             mean_iou = iou_metric.mean_iou()
             print(f"Val mean IoU = {mean_iou:.4f}")
             iou_metric.reset()
-            # Take the average losses
             val_loss = val_loss / len(val_loader)
             val_losses.append(val_loss)
 
