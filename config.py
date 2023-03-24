@@ -14,7 +14,7 @@ else:
     etci_dataset = '/content/ETCI_2021_Competition_Dataset/'
     train_dir = os.path.join(etci_dataset, "train")
     test_dir = os.path.join(etci_dataset, "val")
-    output_dir = os.path.join('content', 'output')
+    output_dir = os.path.join('output')
 
 
 # hyperparameters
