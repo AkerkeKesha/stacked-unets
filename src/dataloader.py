@@ -2,7 +2,7 @@ import albumentations as A
 import numpy as np
 from torch.utils.data import DataLoader
 from dataset import ETCIDataset
-from utils import get_etci_df, get_logging
+from utils import get_etci_df, cleanup_etci_data
 import config
 from sklearn.model_selection import train_test_split
 
@@ -20,11 +20,14 @@ def get_loader():
     regions.remove(validation_region)
 
     original_df = get_etci_df(config.train_dir, split="train")
+    print(f"Original:{original_df.shape}")
+    original_df = cleanup_etci_data(original_df)
+    print(f"Cleaned up:{original_df.shape}")
+
     train_df = original_df[original_df['region'] != validation_region]
     val_df = original_df[original_df['region'] == validation_region]
 
-    logger = get_logging()
-    logger.info(f"Split into train:{train_df.shape} and valid:{val_df.shape}")
+    print(f"Split into train:{train_df.shape} and valid:{val_df.shape}")
 
     transform = A.Compose([
         A.HorizontalFlip(p=0.5),
