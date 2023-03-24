@@ -1,4 +1,5 @@
 import cv2
+import os
 from torch.utils.data import Dataset
 import utils
 from PIL import Image
@@ -31,28 +32,21 @@ class ETCIDataset(Dataset):
             example["image"] = rgb_image.transpose((2, 0, 1))
         else:
             flood_mask = cv2.imread(df_row["flood_label_path"], 0) / 255.0
+            water_mask = cv2.imread(df_row["water_label_path"], 0) / 255.0
             if self.transform:
-                augmented = self.transform(image=rgb_image, mask=flood_mask)
+                # augmented = self.transform(image=rgb_image, mask=flood_mask)
+                augmented = self.transform(image=rgb_image, mask=water_mask)
                 rgb_image = augmented["image"]
-                flood_mask = augmented["mask"]
-            example["image"] = rgb_image.transpose((2, 0, 1)).astype('float32')
-            example["mask"] = flood_mask.astype('int64')
+                # flood_mask = augmented["mask"]
+                water_mask = augmented["mask"]
 
+            # example["mask"] = flood_mask.astype('int64')
+            example["image"] = rgb_image.transpose((2, 0, 1)).astype('float32')
+            example["mask"] = water_mask.astype('int64')
         return example
 
 
 class SN6Dataset(Dataset):
-    def __init__(self):
-        pass
-
-    def __len__(self):
-        pass
-
-    def __getitem__(self, item):
-        pass
-
-
-class Spacenet6Dataset(Dataset):
     def __init__(self, data_dir, transforms=None):
         self.data_dir = data_dir
         self.transforms = transforms
