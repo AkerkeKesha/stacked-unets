@@ -58,6 +58,22 @@ def get_etci_df(dirname, split):
     return pd.DataFrame(paths)
 
 
+def cleanup_etci_data(df):
+    noisy_points = []
+    for i, image_path in enumerate(df['vv_image_path'].tolist()):
+        image = cv2.imread(image_path, 0)
+
+        image_values = list(np.unique(image))
+
+        binary_value_check = (image_values == [0, 255]) or (image_values == [0]) or (image_values == [255])
+
+        if binary_value_check:
+            noisy_points.append(i)
+
+    filtered_df = df.drop(df.index[noisy_points])
+    return filtered_df
+
+
 def visualize_image_and_masks(df_row, figure_size=(25, 15)):
     vv_image_path = df_row['vv_image_path']
     vh_image_path = df_row['vh_image_path']
