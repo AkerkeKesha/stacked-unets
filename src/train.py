@@ -23,6 +23,7 @@ def train(num_epochs):
         print(f"Epoch: [{epoch + 1} / {num_epochs}]")
         model.train()
         training_loss = 0
+
         try:
             for batch in tqdm(train_loader):
                 image = batch["image"].to(device)
@@ -48,6 +49,7 @@ def train(num_epochs):
         train_losses.append(training_loss)
         model.eval()
         iou_metric = IntersectionOverUnion(num_classes=2)
+        val_loss = 0
         try:
             with torch.no_grad():
                 for batch in tqdm(val_loader):
