@@ -19,13 +19,13 @@ def predict():
     model = create_single_unet()
     model.load_state_dict(torch.load(f"{config.output_dir}/single_unet.pt"))
     model.to(device)
-
+    model.double()
     model.eval()
     try:
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 image = batch["image"].to(device)
-                pred = model(image).float()
+                pred = model(image)
                 class_label = pred.argmax(dim=1)
                 class_label = class_label.detach().cpu().numpy()
                 final_predictions.append(class_label)
