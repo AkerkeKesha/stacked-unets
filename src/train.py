@@ -70,7 +70,7 @@ def train(num_epochs):
             print(f"An exception occurred during validation: {ve}")
             continue
 
-    torch.save(model.state_dict(), "output/single_unet.pt")
+    torch.save(model.state_dict(), f"{config.output_dir}/single_unet.pt")
     return train_losses, val_losses
 
 
