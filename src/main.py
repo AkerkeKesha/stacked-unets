@@ -28,7 +28,7 @@ def start_basic_unet():
 
     final_predictions = predict()
     np.save(f'{config.output_dir}/predictions.npy',  fix_imports=True, allow_pickle=False)
-    # TODO: couple of random indices or all
+    # TODO: a couple of random indices or all
     index = -100
     test_df = get_etci_df(config.test_dir, split="test")
     visualize_prediction(test_df.iloc[index], final_predictions[index], figure_size=(17, 10))
