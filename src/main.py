@@ -23,8 +23,8 @@ def start_basic_unet():
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.legend()
-    plt.show()
     plt.savefig(f'{config.output_dir}/loss_plot.png', bbox='tight')
+    plt.show()
 
     final_predictions = predict()
     np.save(f'{config.output_dir}/predictions.npy',  fix_imports=True, allow_pickle=False)
