@@ -1,4 +1,3 @@
-import os.path
 from glob import glob
 import pathlib
 import os
@@ -62,7 +61,6 @@ def cleanup_etci_data(df):
     noisy_points = []
     for i, image_path in enumerate(df['vv_image_path'].tolist()):
         image = cv2.imread(image_path, 0)
-
         image_values = list(np.unique(image))
 
         binary_value_check = (image_values == [0, 255]) or (image_values == [0]) or (image_values == [255])
@@ -93,7 +91,6 @@ def visualize_image_and_masks(df_row, figure_size=(25, 15)):
         plt.imshow(rgb_image)
         plt.title(rgb_filename)
 
-        # plot water body mask
         plt.subplot(1, 2, 2)
         plt.imshow(water_body_label_image)
         plt.title('Water body mask')
@@ -104,12 +101,10 @@ def visualize_image_and_masks(df_row, figure_size=(25, 15)):
         plt.imshow(rgb_image)
         plt.title(rgb_filename)
 
-        # plot flood label mask
         plt.subplot(1, 3, 2)
         plt.imshow(flood_label_image)
         plt.title('Flood mask')
 
-        # plot water body mask
         plt.subplot(1, 3, 3)
         plt.imshow(water_body_label_image)
         plt.title('Water body mask')
@@ -121,12 +116,16 @@ def visualize_prediction(df_row, prediction, figure_size=(25, 15)):
     rgb_input = grayscale_to_rgb(vv_image, vh_image)
 
     water_body_label_path = df_row['water_body_label_path']
+    water_body_label_image = cv2.imread(water_body_label_path, 0) / 255.0
 
     plt.figure(figsize=figure_size)
-    plt.subplot(1, 2, 1)
+    plt.subplot(1, 3, 1)
     plt.imshow(rgb_input)
     plt.title('RGB w/ result')
-    plt.subplot(1, 2, 2)
+    plt.subplot(1, 3, 2)
+    plt.imshow(water_body_label_image)
+    plt.title('Water body mask')
+    plt.subplot(1, 3, 3)
     plt.imshow(prediction)
     plt.title('Prediction')
 
