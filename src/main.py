@@ -37,7 +37,7 @@ def start_basic_unet():
     plt.show()
 
     final_predictions = predict()
-    np.save(f'{config.output_dir}/predictions.npy',  fix_imports=True, allow_pickle=False)
+    np.save(f'{config.output_dir}/predictions.npy', final_predictions, fix_imports=True, allow_pickle=False)
     test_df = get_etci_df(config.test_dir, split="test")
     test_df = cleanup_etci_data(test_df)
 
