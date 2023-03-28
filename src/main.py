@@ -1,10 +1,20 @@
 import time
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+import cv2
 from train import train
 from predict import predict
-import numpy as np
 import config
 from utils import visualize_prediction, get_etci_df
-import matplotlib.pyplot as plt
+
+
+def plot_all_predictions(test_df, final_predictions, output_dir):
+    for i in range(len(test_df)):
+        row = test_df.iloc[i]
+        prediction = final_predictions[i]
+        visualize_prediction(row, prediction, figure_size=(17, 10))
+        plt.savefig(os.path.join(output_dir, f"plot_{i}.png"))
 
 
 def start_basic_unet():
@@ -28,8 +38,9 @@ def start_basic_unet():
 
     final_predictions = predict()
     np.save(f'{config.output_dir}/predictions.npy',  fix_imports=True, allow_pickle=False)
-    # TODO: a couple of random indices or all
-    index = -100
     test_df = get_etci_df(config.test_dir, split="test")
-    visualize_prediction(test_df.iloc[index], final_predictions[index], figure_size=(17, 10))
+
+    output_dir = f"{config.output_dir}/{config.target_dir}"
+    plot_all_predictions(test_df, final_predictions, output_dir)
+    print(f"Prediction plots saved")
 
