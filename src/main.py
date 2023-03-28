@@ -1,19 +1,11 @@
 import time
-import os
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
 from train import train
 from predict import predict
 import config
 from utils import visualize_prediction, get_etci_df, cleanup_etci_data
-
-
-def plot_all_predictions(test_df, final_predictions, output_dir):
-    for i in range(len(test_df)):
-        row = test_df.iloc[i]
-        prediction = final_predictions[i]
-        visualize_prediction(row, prediction, figure_size=(17, 10))
-        plt.savefig(os.path.join(output_dir, f"plot_{i}.png"))
 
 
 def start_basic_unet():
@@ -39,7 +31,10 @@ def start_basic_unet():
     test_df = cleanup_etci_data(test_df)
     final_predictions = predict(test_df)
     np.save(f'{config.output_dir}/predictions.npy', final_predictions, fix_imports=True, allow_pickle=False)
-    output_dir = f"{config.target_dir}"
-    plot_all_predictions(test_df, final_predictions, output_dir)
-    print(f"Prediction plots saved")
 
+    for index in range(10):
+        visualize_prediction(test_df.iloc[index], final_predictions[index], figure_size=(17, 10))
+    print(f"First 10 predictions plotted")
+    for index in range(-10, 0, 1):
+        visualize_prediction(test_df.iloc[index], final_predictions[index], figure_size=(17, 10))
+    print(f"Last 10 predictions plotted")
