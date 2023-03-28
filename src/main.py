@@ -6,7 +6,7 @@ import cv2
 from train import train
 from predict import predict
 import config
-from utils import visualize_prediction, get_etci_df
+from utils import visualize_prediction, get_etci_df, cleanup_etci_data
 
 
 def plot_all_predictions(test_df, final_predictions, output_dir):
@@ -39,8 +39,9 @@ def start_basic_unet():
     final_predictions = predict()
     np.save(f'{config.output_dir}/predictions.npy',  fix_imports=True, allow_pickle=False)
     test_df = get_etci_df(config.test_dir, split="test")
+    test_df = cleanup_etci_data(test_df)
 
-    output_dir = f"{config.output_dir}/{config.target_dir}"
+    output_dir = f"{config.target_dir}"
     plot_all_predictions(test_df, final_predictions, output_dir)
     print(f"Prediction plots saved")
 
