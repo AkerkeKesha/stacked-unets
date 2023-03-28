@@ -8,10 +8,8 @@ import config
 from utils import get_etci_df, cleanup_etci_data
 
 
-def predict():
+def predict(test_df):
     final_predictions = []
-    test_df = get_etci_df(config.test_dir, split="test")
-    test_df = cleanup_etci_data(test_df)
 
     test_dataset = ETCIDataset(test_df, split="test", transform=None)
     test_loader = DataLoader(test_dataset, batch_size=config.batch_size, shuffle=False, num_workers=config.num_workers)
@@ -33,6 +31,6 @@ def predict():
     except Exception as te:
         print(f"An exception occurred during inference: {te}")
 
-    # produce a single array of predictin from all batches of test data
+    # produce a single array of prediction from all batches of test data
     final_predictions = np.concatenate(final_predictions, axis=0)
     return final_predictions
