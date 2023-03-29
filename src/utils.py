@@ -24,6 +24,13 @@ def grayscale_to_rgb(vv_image, vh_image):
     return rgb_image
 
 
+def sar_to_grayscale(vv_image, vh_image):
+    gray_image = (vv_image + vh_image) / 2
+    # normalize values to [0, 1]
+    gray_image = (gray_image - np.min(gray_image)) / (np.max(gray_image) - np.min(gray_image))
+    return gray_image
+
+
 def get_etci_df(dirname, split):
     vv_image_paths = sorted(glob(dirname + '/*/*/vv/*.png', recursive=True))
     vh_image_paths, flood_label_paths, water_body_label_paths, region_names = [], [], [], []
