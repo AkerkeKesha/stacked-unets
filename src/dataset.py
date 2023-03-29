@@ -1,16 +1,10 @@
 import cv2
-import os
 import numpy as np
 from torch.utils.data import Dataset
 import utils
-from PIL import Image
 
 
 class ETCIDataset(Dataset):
-    """
-    Reference:
-    https://medium.com/cloud-to-street/jumpstart-your-machine-learning-satellite-competition-submission-2443b40d0a5a
-    """
     def __init__(self, dataframe, split, transform=None):
         self.dataset = dataframe
         self.split = split
@@ -26,28 +20,20 @@ class ETCIDataset(Dataset):
         vv_image = cv2.imread(df_row["vv_image_path"], 0) / 255.0
         vh_image = cv2.imread(df_row["vh_image_path"], 0) / 255.0
 
-        # TODO: remove from training
-        rgb_image = utils.grayscale_to_rgb(vv_image, vh_image)
+        gray_image = utils.sar_to_grayscale(vv_image, vh_image)
 
         if self.split == "test":
-            example["image"] = rgb_image.transpose((2, 0, 1))
+            example["image"] = np.expand_dims(gray_image, axis=0)
         else:
             flood_mask = cv2.imread(df_row["flood_label_path"], 0) / 255.0
-            try:
-                water_mask = cv2.imread(df_row["water_body_label_path"], 0) / 255.0
-            except KeyError:
-                print(f"{index}")
 
             if self.transform:
-                # augmented = self.transform(image=rgb_image, mask=flood_mask)
-                augmented = self.transform(image=rgb_image, mask=water_mask)
-                rgb_image = augmented["image"]
-                # flood_mask = augmented["mask"]
-                water_mask = augmented["mask"]
+                augmented = self.transform(image=gray_image, mask=flood_mask)
+                gray_image = augmented["image"]
+                flood_mask = augmented["mask"]
 
-            # example["mask"] = flood_mask.astype('int64')
-            example["image"] = rgb_image.transpose((2, 0, 1)).astype('float32')
-            example["mask"] = water_mask.astype('int64')
+            example["mask"] = flood_mask.astype('int64')
+            example["image"] = np.expand_dims(gray_image, axis=0).astype('float32')
         return example
 
 
