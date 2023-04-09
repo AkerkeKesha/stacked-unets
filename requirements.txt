@@ -1,16 +1,16 @@
-jupyter==1.0.0
-numpy==1.21.6
-scikit-learn==1.0.2
-matplotlib==3.5.3
-torch==1.13.1
-torchvision==0.14.1
-tqdm==4.64.1
-albumentations==1.3.0
-opencv-python==4.7.0.72
-segmentation-models-pytorch==0.3.2
-scikit-image==0.19.3
-geopandas==0.10.2
-rasterio==1.2.10
+jupyter
+numpy
+scikit-learn
+matplotlib
+torch
+torchvision
+tqdm
+albumentations
+opencv-python
+segmentation-models-pytorch
+scikit-image
+geopandas
+rasterio
 
 
 
