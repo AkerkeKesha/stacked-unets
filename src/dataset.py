@@ -20,7 +20,7 @@ class ETCIDataset(Dataset):
         vv_image = cv2.imread(df_row["vv_image_path"], 0) / 255.0
         vh_image = cv2.imread(df_row["vh_image_path"], 0) / 255.0
         # TODO make a tensor with 2 input channels - > Tensor(H, W, 2)
-        input_image = np.stack((vv_image, vh_image))
+        input_image = np.dstack((vv_image, vh_image))
 
         if self.split == "test":
             example["image"] = np.transpose(input_image, (2, 0, 1)).astype('float32')
