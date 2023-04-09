@@ -19,21 +19,20 @@ class ETCIDataset(Dataset):
 
         vv_image = cv2.imread(df_row["vv_image_path"], 0) / 255.0
         vh_image = cv2.imread(df_row["vh_image_path"], 0) / 255.0
-
-        gray_image = utils.sar_to_grayscale(vv_image, vh_image)
+        # TODO make a tensor with 2 input channels - > Tensor(H, W, 2)
+        input_image = np.stack((vv_image, vh_image))
 
         if self.split == "test":
-            example["image"] = np.expand_dims(gray_image, axis=0)
+            example["image"] = np.transpose(input_image, (2, 0, 1)).astype('float32')
         else:
             flood_mask = cv2.imread(df_row["flood_label_path"], 0) / 255.0
-
             if self.transform:
-                augmented = self.transform(image=gray_image, mask=flood_mask)
+                augmented = self.transform(image=input_image, mask=flood_mask)
                 gray_image = augmented["image"]
                 flood_mask = augmented["mask"]
 
             example["mask"] = flood_mask.astype('int64')
-            example["image"] = np.expand_dims(gray_image, axis=0).astype('float32')
+            example["image"] = np.transpose(input_image, (2, 0, 1)).astype('float32')
         return example
 
 
