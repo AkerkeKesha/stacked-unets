@@ -26,7 +26,7 @@ def start_basic_unet():
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.legend()
-    plt.savefig(f'{config.output_dir}/loss_plot.png', bbox='tight')
+    plt.savefig(f'{config.output_dir}/loss_plot.png', bbox_inches='tight')
     plt.show()
 
     train_iou = np.load(f'{config.output_dir}/train_iou.npy')
@@ -38,7 +38,7 @@ def start_basic_unet():
     plt.ylabel("Mean IoU")
     plt.legend()
     plt.title("Mean IoU over Epochs")
-    plt.savefig(f'{config.output_dir}/iou_plot.png', bbox='tight')
+    plt.savefig(f'{config.output_dir}/iou_plot.png', bbox_inches='tight')
     plt.show()
 
     test_df = get_etci_df(config.test_dir, split="test")
