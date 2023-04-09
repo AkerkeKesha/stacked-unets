@@ -19,7 +19,8 @@ class IntersectionOverUnion:
         self.count += y_true.size
 
     def mean_iou(self):
-        iou = np.diag(self.conf_matrix) / (self.conf_matrix.sum(axis=1) + self.conf_matrix.sum(axis=0) - np.diag(self.conf_matrix) + self.smooth)
+        iou = np.diag(self.conf_matrix) / \
+              (self.conf_matrix.sum(axis=1) + self.conf_matrix.sum(axis=0) - np.diag(self.conf_matrix) + self.smooth)
         mean_iou = np.nanmean(iou)
         return mean_iou
 
