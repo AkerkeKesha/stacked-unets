@@ -16,7 +16,6 @@ class ETCIDataset(Dataset):
     def __getitem__(self, index):
         example = {}
         df_row = self.dataset.iloc[index]
-
         vv_image = cv2.imread(df_row["vv_image_path"], 0) / 255.0
         vh_image = cv2.imread(df_row["vh_image_path"], 0) / 255.0
         # TODO make a tensor with 2 input channels - > Tensor(H, W, 2)
