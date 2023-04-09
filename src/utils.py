@@ -135,7 +135,7 @@ def visualize_prediction(df_row, prediction, output_dir, figure_size=(25, 15)):
 
     image_id = os.path.basename(df_row['vv_image_path']).split('.')[0]
     output_path = os.path.join(output_dir, f"{image_id}_visualization.png")
-    plt.savefig(output_path, bbox_inches='tight')
+    plt.savefig(output_path, bbox='tight')
     plt.close()
 
 
