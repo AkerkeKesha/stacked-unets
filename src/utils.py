@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import cv2
 import logging
+import config
 import matplotlib.pyplot as plt
 
 logging.basicConfig(filename="single_Unet_training.log",
@@ -18,7 +19,6 @@ def get_logging():
 
 
 def grayscale_to_rgb(vv_image, vh_image):
-    # TODO: make sure NN does not use clipped data
     ratio_image = np.clip(np.nan_to_num(vh_image/(vv_image + 1e-6), 0), 0, 1)
     rgb_image = np.stack((vv_image, vh_image, 1-ratio_image), axis=2)
     return rgb_image
@@ -69,14 +69,10 @@ def cleanup_etci_data(df):
     for i, image_path in enumerate(df['vv_image_path'].tolist()):
         image = cv2.imread(image_path, 0)
         image_values = list(np.unique(image))
-
         binary_value_check = (image_values == [0, 255]) or (image_values == [0]) or (image_values == [255])
-
         if binary_value_check:
             noisy_points.append(i)
-
-    filtered_df = df.drop(df.index[noisy_points])
-    return filtered_df
+    return df.drop(df.index[noisy_points])
 
 
 def visualize_image_and_masks(df_row, figure_size=(25, 15)):
@@ -117,7 +113,7 @@ def visualize_image_and_masks(df_row, figure_size=(25, 15)):
         plt.title('Water body mask')
 
 
-def visualize_prediction(df_row, prediction, figure_size=(25, 15)):
+def visualize_prediction(df_row, prediction, output_dir, figure_size=(25, 15)):
     vv_image = cv2.imread(df_row['vv_image_path'], 0) / 255.0
     vh_image = cv2.imread(df_row['vh_image_path'], 0) / 255.0
     rgb_input = grayscale_to_rgb(vv_image, vh_image)
@@ -136,21 +132,51 @@ def visualize_prediction(df_row, prediction, figure_size=(25, 15)):
     plt.imshow(prediction)
     plt.title('Prediction')
 
+    image_id = os.path.basename(df_row['vv_image_path']).split('.')[0]
+    output_path = os.path.join(output_dir, f"{image_id}_visualization.png")
+    plt.savefig(output_path, bbox_inches='tight')
+    plt.close()
 
-# def get_sn6_df(dirname, split):
-#     image_paths, label_paths = [], []
-#     for i in range(len(image_paths)):
-#         image_path =
-#         image_paths.append(image_path)
-#         if split == "test":
-#             label_paths.append(np.NaN)
-#         else:
-#             label_path =
-#             label_paths.append(label_path)
-#
-#     paths = {
-#         "image_path": image_paths,
-#         "label_path": label_paths,
-#     }
-#     return pd.DataFrame(paths)
 
+def get_sn6_df(image_ids, split, mode='SAR-Intensity'):
+    summary_df = pd.read_csv(config.sn6_summary_datapath)
+    image_ids = summary_df.ImageId.unique()
+
+    image_paths, mask_paths = [], []
+    for image_id in image_ids:
+        # TODO: test image ids are different
+        image_path = f'{config.train_dir}/{mode}/SN6_Train_AOI_11_Rotterdam_{mode}_{image_id}.tif'
+        image_paths.append(image_path)
+        if split == "test":
+            mask_paths.append(np.NaN)
+        else:
+            mask_path = f'{config.mask_train_dir}/SN6_Train_AOI_11_Rotterdam_{mode}_{image_id}.png'
+            mask_paths.append(mask_path)
+    paths = {
+        "image_id": image_ids,
+        "image_path": image_paths,
+        "mask_path": mask_paths,
+    }
+    return pd.DataFrame(paths)
+
+
+def cleanup_sn6_data(df, not_processed):
+    # Assuming your DataFrame has a column named 'image_id' that stores the image_id values
+    cleaned_df = df[~df['image_id'].isin(not_processed)]
+    return cleaned_df
+
+
+mask_train_dir = 'your_mask_train_directory_here'
+image_ids = []
+not_processed = []
+
+for image_id in image_ids:
+    mode = 'SAR-Intensity'
+    out_filename = f'SN6_Train_AOI_11_Rotterdam_{mode}_{image_id}.png'
+    mask_path = os.path.join(mask_train_dir, out_filename)
+
+    if not os.path.exists(mask_path):
+        not_processed.append(image_id)
+
+print(f"{len(not_processed)} images could not have binary masks saved/generated.")
+np.save(f'not_processed.npy', not_processed)
