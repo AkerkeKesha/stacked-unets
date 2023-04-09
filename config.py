@@ -8,7 +8,7 @@ import argparse
 # args = parser.parse_args()
 # is_colab = args.is_colab
 # dataset_name = arg.dataset_name
-dataset_name = "etci"
+dataset = "etci"
 # dataset_name = "sn6"
 # is_colab = False
 is_colab = True
@@ -19,11 +19,11 @@ else:
 
 output_dir = os.path.join(project_root, 'output')
 
-if dataset_name == 'etci':
+if dataset == 'etci':
     dataset_name = 'data-etci-flood'
     train_dir = os.path.join(project_root, 'dataset', dataset_name, 'train')
     test_dir = os.path.join(project_root, 'dataset', dataset_name, 'test_internal')
-elif dataset_name == 'sn6':
+elif dataset == 'sn6':
     dataset_name = 'data-spacenet6'
     train_dir = os.path.join(project_root, 'dataset', dataset_name, 'train', 'AOI_11_Rotterdam')
     test_dir = os.path.join(project_root, 'dataset', dataset_name, 'test_public', 'AOI_11_Rotterdam')
