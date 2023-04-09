@@ -72,7 +72,8 @@ def cleanup_etci_data(df):
         binary_value_check = (image_values == [0, 255]) or (image_values == [0]) or (image_values == [255])
         if binary_value_check:
             noisy_points.append(i)
-    return df.drop(df.index[noisy_points])
+    filtered_df = df.drop(df.index[noisy_points])
+    return filtered_df
 
 
 def visualize_image_and_masks(df_row, figure_size=(25, 15)):
