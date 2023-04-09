@@ -1,4 +1,5 @@
 import time
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 from train import train
@@ -46,7 +47,14 @@ def start_basic_unet():
     final_predictions = predict(test_df)
     np.save(f'{config.output_dir}/predictions.npy', final_predictions, fix_imports=True, allow_pickle=False)
 
-    for index in range(len(final_predictions)):
-        visualize_prediction(test_df.iloc[index], final_predictions[index],
-                             output_dir=f'{config.output_dir}/{config.dataset}_labels', figure_size=(17, 10))
+    n_batches = math.ceil(len(final_predictions) / config.batch_size)
+    for batch in range(n_batches):
+        start = batch * config.batch_size
+        end = min((batch + 1) * config.batch_size, len(final_predictions))
+
+        for index in range(start, end):
+            visualize_prediction(test_df.iloc[index], final_predictions[index],
+                                 output_dir=f'{config.output_dir}/{config.dataset}_labels', figure_size=(17, 10))
+
+        print(f"Finished plotting batch {batch + 1}/{n_batches}")
     print(f"All predictions finished plotting")
