@@ -10,30 +10,27 @@ from evaluate import IntersectionOverUnion
 def train(num_epochs):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = create_single_unet()
-
     model.to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
 
+    optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
     criterion = nn.CrossEntropyLoss()
-    iou_metric = IntersectionOverUnion(num_classes=2)
+
     train_loader, val_loader = get_loader()
-    train_losses = []
-    val_losses = []
+    train_losses, val_losses = [], []
+    train_ious, val_ious = [], []
     for epoch in range(num_epochs):
         print(f"Epoch: [{epoch + 1} / {num_epochs}]")
         model.train()
         training_loss = 0
-
+        iou_metric = IntersectionOverUnion(num_classes=2)
         try:
             for batch in tqdm(train_loader):
                 image = batch["image"].to(device)
                 mask = batch["mask"].to(device)
                 pred = model(image)
-
                 loss = criterion(pred, mask)
                 optimizer.zero_grad()
                 training_loss += loss.item()
-                # TODO: dont learn on wrong parts of the images, e.f. reg = 0, is land not water
                 loss.backward()
                 optimizer.step()
                 iou_metric.update(pred.detach().cpu().numpy(), mask.cpu().numpy())
@@ -43,6 +40,7 @@ def train(num_epochs):
 
         mean_iou = iou_metric.mean_iou()
         print(f"Train mean IoU = {mean_iou:.4f}")
+        train_ious.append(mean_iou)
         iou_metric.reset()
         training_loss = training_loss / len(train_loader)
         print(f"Train mean loss = {training_loss:.4f}")
@@ -62,6 +60,7 @@ def train(num_epochs):
 
                 mean_iou = iou_metric.mean_iou()
                 print(f"Val mean IoU = {mean_iou:.4f}")
+                val_ious.append(mean_iou)
                 iou_metric.reset()
                 val_loss = val_loss / len(val_loader)
                 print(f"Val mean loss = {val_loss:.4f}")
@@ -71,7 +70,7 @@ def train(num_epochs):
             continue
 
     torch.save(model.state_dict(), f"{config.output_dir}/single_unet.pt")
-    return train_losses, val_losses
+    return train_losses, val_losses, train_ious, val_ious
 
 
 
