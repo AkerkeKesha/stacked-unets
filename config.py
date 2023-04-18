@@ -2,23 +2,17 @@ import os
 import argparse
 
 
-# parser = argparse.ArgumentParser(description='Run basic UNet')
-# parser.add_argument('--colab', dest='is_colab', type=bool, help='Flag to indicate if running on Colab or not')
-# parser.add_argument('--dataset', dest='dataset_name', type=str, default='etci', help='Name of the dataset (etci or sn6)')
-# args = parser.parse_args()
-# is_colab = args.is_colab
-# dataset_name = arg.dataset_name
-dataset = "etci"
-# dataset_name = "sn6"
 # is_colab = False
 is_colab = True
+
 if not is_colab:
     project_root = os.path.dirname(os.path.abspath(__file__))
 else:
     project_root = '/content/stacked-unets'
-
 output_dir = os.path.join(project_root, 'output')
 
+# dataset = "etci"
+dataset = "sn6"
 if dataset == 'etci':
     dataset_name = 'data-etci-flood'
     train_dir = os.path.join(project_root, 'dataset', dataset_name, 'train')
@@ -37,3 +31,4 @@ batch_size = 96
 # training related
 learning_rate = 1e-3
 num_epochs = 5
+
