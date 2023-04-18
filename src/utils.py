@@ -26,7 +26,6 @@ def grayscale_to_rgb(vv_image, vh_image):
 
 def sar_to_grayscale(vv_image, vh_image):
     gray_image = (vv_image + vh_image) / 2
-    # normalize values to [0, 1]
     gray_image = (gray_image - np.min(gray_image)) / (np.max(gray_image) - np.min(gray_image))
     return gray_image
 
@@ -139,20 +138,22 @@ def visualize_prediction(df_row, prediction, output_dir, figure_size=(25, 15)):
     plt.close()
 
 
-def get_sn6_df(image_ids, split, mode='SAR-Intensity'):
-    summary_df = pd.read_csv(config.sn6_summary_datapath)
-    image_ids = summary_df.ImageId.unique()
-
-    image_paths, mask_paths = [], []
-    for image_id in image_ids:
-        # TODO: test image ids are different
-        image_path = f'{config.train_dir}/{mode}/SN6_Train_AOI_11_Rotterdam_{mode}_{image_id}.tif'
-        image_paths.append(image_path)
-        if split == "test":
-            mask_paths.append(np.NaN)
-        else:
+def get_sn6_df(split, mode="SAR-Intensity"):
+    image_ids, image_paths, mask_paths = [], [], []
+    if split == "train":
+        summary_df = pd.read_csv(config.sn6_summary_datapath)
+        image_ids = summary_df.ImageId.unique()
+        for image_id in image_ids:
+            image_path = f'{config.train_dir}/{mode}/SN6_Train_AOI_11_Rotterdam_{mode}_{image_id}.tif'
+            image_paths.append(image_path)
             mask_path = f'{config.mask_train_dir}/SN6_Train_AOI_11_Rotterdam_{mode}_{image_id}.png'
             mask_paths.append(mask_path)
+    elif split == "test":
+        image_ids = get_sn6_test_image_ids(test_dir=config.test_dir)
+        for image_id in image_ids:
+            image_path = f'{config.test_dir}/{mode}/SN6_Test_Public_AOI_11_Rotterdam_{mode}_{image_id}.tif'
+            image_paths.append(image_path)
+            mask_paths.append(np.NaN)
     paths = {
         "image_id": image_ids,
         "image_path": image_paths,
@@ -162,22 +163,24 @@ def get_sn6_df(image_ids, split, mode='SAR-Intensity'):
 
 
 def cleanup_sn6_data(df, not_processed):
-    # Assuming your DataFrame has a column named 'image_id' that stores the image_id values
     cleaned_df = df[~df['image_id'].isin(not_processed)]
     return cleaned_df
 
 
-mask_train_dir = 'your_mask_train_directory_here'
-image_ids = []
-not_processed = []
+def get_sn6_not_processed(mask_train_dir, image_ids):
+    not_processed = []
+    for image_id in image_ids:
+        mode = 'SAR-Intensity'
+        out_filename = f'SN6_Train_AOI_11_Rotterdam_{mode}_{image_id}.png'
+        mask_path = os.path.join(mask_train_dir, out_filename)
+        if not os.path.exists(mask_path):
+            not_processed.append(image_id)
+    return not_processed
 
-for image_id in image_ids:
-    mode = 'SAR-Intensity'
-    out_filename = f'SN6_Train_AOI_11_Rotterdam_{mode}_{image_id}.png'
-    mask_path = os.path.join(mask_train_dir, out_filename)
 
-    if not os.path.exists(mask_path):
-        not_processed.append(image_id)
-
-print(f"{len(not_processed)} images could not have binary masks saved/generated.")
-np.save(f'not_processed.npy', not_processed)
+def get_sn6_test_image_ids(test_dir):
+    search_pattern = os.path.join(test_dir, 'SAR-Intensity', 'SN6_Test_Public_AOI_11_Rotterdam_*.tif')
+    file_paths = glob(search_pattern)
+    image_ids = [os.path.basename(file_path).replace('SN6_Test_Public_AOI_11_Rotterdam_SAR-Intensity_', '')
+                 .replace('.tif', '') for file_path in file_paths]
+    return image_ids
