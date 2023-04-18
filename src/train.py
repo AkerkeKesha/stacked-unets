@@ -15,7 +15,7 @@ def train(num_epochs):
     optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
     criterion = nn.CrossEntropyLoss()
 
-    train_loader, val_loader = get_loader()
+    train_loader, val_loader = get_loader(config.dataset)
     train_losses, val_losses = [], []
     train_ious, val_ious = [], []
     for epoch in range(num_epochs):
@@ -69,7 +69,7 @@ def train(num_epochs):
             print(f"An exception occurred during validation: {ve}")
             continue
 
-    torch.save(model.state_dict(), f"{config.output_dir}/single_unet.pt")
+    torch.save(model.state_dict(), f"{config.output_dir}/single_unet_{config.dataset}.pt")
     return train_losses, val_losses, train_ious, val_ious
 
 
