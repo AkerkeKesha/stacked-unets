@@ -61,7 +61,7 @@ def start_basic_unet():
         for index in range(start, end):
             # TODO: visualize spacenet6
             visualize_prediction(test_df.iloc[index], final_predictions[index],
-                                 output_dir=f'{config.output_dir}/{config.dataset}_labels', figure_size=(17, 10))
+                                 output_dir=f'{config.output_dir}/{config.dataset}_labels', figure_size=(10, 6))
 
         print(f"Finished plotting batch {batch + 1}/{n_batches}")
     print(f"All predictions finished plotting")
