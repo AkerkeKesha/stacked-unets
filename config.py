@@ -26,7 +26,7 @@ elif dataset == 'sn6':
 
 # hyperparameters
 num_workers = 2
-batch_size = 96
+batch_size = 48
 
 # training related
 learning_rate = 1e-3
