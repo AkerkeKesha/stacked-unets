@@ -1,20 +1,6 @@
 import os
 
-environment = ""
-try:
-    from google.colab import drive
-    environment = "colab"
-except ImportError:
-    pass
-
-try:
-    import kaggle
-    environment = "kaggle"
-except ImportError:
-    pass
-
-if environment == "":
-    environment = "local"
+environment = "colab"
 
 if environment == "local":
     project_root = os.path.dirname(os.path.abspath(__file__))
