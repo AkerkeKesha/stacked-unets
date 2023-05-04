@@ -19,17 +19,13 @@ class ETCIDataset(Dataset):
         vv_image = cv2.imread(df_row["vv_image_path"], 0) / 255.0
         vh_image = cv2.imread(df_row["vh_image_path"], 0) / 255.0
         input_image = np.dstack((vv_image, vh_image))
-
-        if self.split == "test":
-            example["image"] = np.transpose(input_image, (2, 0, 1)).astype('float32')
-        else:
-            flood_mask = cv2.imread(df_row["flood_label_path"], 0) / 255.0
-            if self.transform:
-                augmented = self.transform(image=input_image, mask=flood_mask)
-                input_image = augmented["image"]
-                flood_mask = augmented["mask"]
-            example["mask"] = flood_mask.astype('int64')
-            example["image"] = np.transpose(input_image, (2, 0, 1)).astype('float32')
+        flood_mask = cv2.imread(df_row["flood_label_path"], 0) / 255.0
+        if self.transform:
+            augmented = self.transform(image=input_image, mask=flood_mask)
+            input_image = augmented["image"]
+            flood_mask = augmented["mask"]
+        example["mask"] = flood_mask.astype('int64')
+        example["image"] = np.transpose(input_image, (2, 0, 1)).astype('float32')
         return example
 
 
