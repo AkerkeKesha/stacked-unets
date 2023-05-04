@@ -1,25 +1,26 @@
 import time
 import math
+import os
 import numpy as np
 import matplotlib.pyplot as plt
+import config
 from train import train
 from predict import predict
-import config
-from utils import (
-    visualize_prediction, get_etci_df, cleanup_etci_data, get_sn6_df
-)
+from dataloader import get_loader
+from utils import plot_single_prediction
 
 
 def start_basic_unet():
     start = time.time()
-    train_losses, val_losses, train_iou, val_iou = train(config.num_epochs)
+    train_loader, val_loader, test_loader = get_loader(config.dataset)
+    train_losses, val_losses, train_iou, val_iou = train(config.num_epochs, train_loader, val_loader)
     print(f"{time.time() - start} seconds to train")
     np.save(f'{config.output_dir}/train_losses_{config.dataset}.npy', train_losses)
     np.save(f'{config.output_dir}/val_losses_{config.dataset}.npy', val_losses)
     print(f"Done saving average losses")
     np.save(f'{config.output_dir}/train_iou_{config.dataset}.npy', train_iou)
     np.save(f'{config.output_dir}/val_iou_{config.dataset}.npy', val_iou)
-    print(f"Done saving evaluation metrics")
+    print(f"Done saving evaluation metrics on train/val")
 
     train_losses = np.load(f'{config.output_dir}/train_losses_{config.dataset}.npy')
     val_losses = np.load(f'{config.output_dir}/val_losses_{config.dataset}.npy')
@@ -44,13 +45,7 @@ def start_basic_unet():
     plt.savefig(f'{config.output_dir}/iou_plot_{config.dataset}.png', bbox_inches='tight')
     plt.show()
 
-    if config.dataset == "sn6":
-        test_df = get_sn6_df(split="test")
-    else:
-        test_df = get_etci_df(config.test_dir, split="test")
-        test_df = cleanup_etci_data(test_df)
-    final_predictions = predict(test_df, config.dataset)
-
+    final_predictions = predict(test_loader)
     np.save(f'{config.output_dir}/predictions_{config.dataset}.npy', final_predictions, fix_imports=True, allow_pickle=False)
 
     n_batches = math.ceil(len(final_predictions) / config.batch_size)
@@ -59,9 +54,8 @@ def start_basic_unet():
         end = min((batch + 1) * config.batch_size, len(final_predictions))
 
         for index in range(start, end):
-            # TODO: visualize spacenet6
-            visualize_prediction(test_df.iloc[index], final_predictions[index],
-                                 output_dir=f'{config.output_dir}/{config.dataset}_labels', figure_size=(10, 6))
-
+            vv_image_path = test_loader.dataset.image_paths[index][0]
+            image_id = os.path.basename(vv_image_path).split('.')[0]
+            plot_single_prediction(image_id, final_predictions[index], config.output_dir)
         print(f"Finished plotting batch {batch + 1}/{n_batches}")
     print(f"All predictions finished plotting")
