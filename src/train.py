@@ -3,11 +3,10 @@ import torch.nn as nn
 import config
 from tqdm.notebook import tqdm
 from model import create_single_unet
-from dataloader import get_loader
 from evaluate import IntersectionOverUnion
 
 
-def train(num_epochs):
+def train(num_epochs, train_loader, val_loader):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = create_single_unet()
     model.to(device)
@@ -15,7 +14,6 @@ def train(num_epochs):
     optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
     criterion = nn.CrossEntropyLoss()
 
-    train_loader, val_loader = get_loader(config.dataset)
     train_losses, val_losses = [], []
     train_ious, val_ious = [], []
     for epoch in range(num_epochs):
