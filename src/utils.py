@@ -75,6 +75,14 @@ def cleanup_etci_data(df):
     return filtered_df
 
 
+def plot_single_prediction(image_id, prediction, output_dir, figure_size=(6, 6)):
+    plt.figure(figsize=figure_size)
+    plt.imshow(prediction)
+    output_path = os.path.join(output_dir, f"prediction_{image_id}.png")
+    plt.savefig(output_path, bbox_inches='tight')
+    plt.close()
+
+
 def visualize_image_and_masks(df_row, figure_size=(25, 15)):
     vv_image_path = df_row['vv_image_path']
     vh_image_path = df_row['vh_image_path']
