@@ -53,7 +53,7 @@ def start_basic_unet():
         end = min((batch + 1) * config.batch_size, len(final_predictions))
         for index in range(start, end):
             original_index = test_loader.dataset.indices[index]
-            df_row = test_loader.dataset.dataframe.iloc[original_index]
+            df_row = test_loader.dataset.dataset.iloc[original_index]
             vv_image_path = df_row["vv_image_path"]
             image_id = os.path.basename(vv_image_path).split('.')[0]
             plot_single_prediction(image_id, final_predictions[index], config.output_dir)
