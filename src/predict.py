@@ -19,14 +19,16 @@ def predict(test_loader):
         with torch.no_grad():
             for batch in tqdm(test_loader):
                 image = batch["image"].to(device)
-                true_mask = batch["mask"].numpy()  # Store true masks
+                true_mask = batch["mask"].numpy()
+                print(f"[predict] Image shape: {image.shape}, True mask shape: {true_mask.shape}")
                 true_labels.append(true_mask)
 
                 pred = model(image)
+                iou_metric.update(pred.detach().cpu().numpy(), true_mask)  # Pass the pred tensor directly
+
                 class_label = pred.argmax(dim=1)
                 class_label = class_label.detach().cpu().numpy()
                 final_predictions.append(class_label.astype("uint8"))
-                iou_metric.update(class_label, true_mask)
 
     except Exception as te:
         print(f"An exception occurred during inference: {te}")
