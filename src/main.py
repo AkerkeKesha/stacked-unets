@@ -47,15 +47,16 @@ def start_basic_unet():
 
     final_predictions = predict(test_loader)
     np.save(f'{config.output_dir}/predictions_{config.dataset}.npy', final_predictions, fix_imports=True, allow_pickle=False)
-
     n_batches = math.ceil(len(final_predictions) / config.batch_size)
     for batch in range(n_batches):
         start = batch * config.batch_size
         end = min((batch + 1) * config.batch_size, len(final_predictions))
-
         for index in range(start, end):
-            vv_image_path = test_loader.dataset.image_paths[index][0]
+            original_index = test_loader.dataset.indices[index]
+            df_row = test_loader.dataset.dataframe.iloc[original_index]
+            vv_image_path = df_row["vv_image_path"]
             image_id = os.path.basename(vv_image_path).split('.')[0]
             plot_single_prediction(image_id, final_predictions[index], config.output_dir)
+
         print(f"Finished plotting batch {batch + 1}/{n_batches}")
     print(f"All predictions finished plotting")
