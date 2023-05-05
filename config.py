@@ -10,8 +10,8 @@ else:
     project_root = "/kaggle"
 
 output_dir = os.path.join(project_root, 'output')
-# dataset = "etci"
-dataset = "sn6"
+dataset = "etci"
+# dataset = "sn6"
 if dataset == 'etci':
     dataset_name = 'data-etci-flood'
     train_dir = os.path.join(project_root, 'dataset', dataset_name, 'train')
