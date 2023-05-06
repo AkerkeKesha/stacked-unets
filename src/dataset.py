@@ -9,7 +9,7 @@ class ETCIDataset(Dataset):
         self.dataset = dataframe
         self.split = split
         self.transform = transform
-        self.indices = dataframe.index
+        self.indices = list(range(len(dataframe)))
 
     def __len__(self):
         return self.dataset.shape[0]
