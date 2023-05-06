@@ -52,8 +52,10 @@ def start_basic_unet():
         start = batch * config.batch_size
         end = min((batch + 1) * config.batch_size, len(final_predictions))
         for index in range(start, end):
-            original_index = test_loader.dataset.indices[index]
+            original_index = index
+            print(f"original_index: {original_index}")
             df_row = test_loader.dataset.dataset.iloc[original_index]
+            print(f"Total rows in DataFrame: {len(test_loader.dataset.dataset)}")
             vv_image_path = df_row["vv_image_path"]
             image_id = os.path.basename(vv_image_path).split('.')[0]
             plot_single_prediction(image_id, final_predictions[index], config.output_dir)
