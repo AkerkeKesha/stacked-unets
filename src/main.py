@@ -56,7 +56,8 @@ def start_basic_unet():
             df_row = test_loader.dataset.dataset.iloc[original_index]
             vv_image_path = df_row["vv_image_path"]
             image_id = os.path.basename(vv_image_path).split('.')[0]
-            plot_single_prediction(image_id, final_predictions[index], config.output_dir)
+            plot_single_prediction(image_id, final_predictions[index],
+                                   f"{config.output_dir}/{config.dataset_name}_labels)")
 
         print(f"Finished plotting batch {batch + 1}/{n_batches}")
     print(f"All predictions finished plotting")
