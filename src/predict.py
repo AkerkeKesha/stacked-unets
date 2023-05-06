@@ -20,7 +20,6 @@ def predict(test_loader):
             for batch in tqdm(test_loader):
                 image = batch["image"].to(device)
                 true_mask = batch["mask"].numpy()
-                print(f"[predict] Image shape: {image.shape}, True mask shape: {true_mask.shape}")
                 true_labels.append(true_mask)
 
                 pred = model(image)
@@ -32,7 +31,6 @@ def predict(test_loader):
 
     except Exception as te:
         print(f"An exception occurred during inference: {te}")
-
     mean_iou = iou_metric.mean_iou()
     print(f"Mean IoU for the test dataset: {mean_iou}")
     final_predictions = np.concatenate(final_predictions, axis=0)  # a single array of prediction from all batches
