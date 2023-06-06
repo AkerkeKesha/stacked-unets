@@ -32,7 +32,7 @@ def sar_to_grayscale(vv_image, vh_image):
 
 def get_etci_df(dirname, split):
     vv_image_paths = sorted(glob(dirname + '/*/*/vv/*.png', recursive=True))
-    vh_image_paths, flood_label_paths, water_body_label_paths, region_names = [], [], [], []
+    vh_image_paths, flood_label_paths, water_body_label_paths, region_names, semantic_map_paths = [], [], [], [], []
     for i in range(len(vv_image_paths)):
         vv_image_path = pathlib.PurePath(vv_image_paths[i])
         region_dirname = vv_image_path.parent.parent.parent
@@ -52,6 +52,7 @@ def get_etci_df(dirname, split):
         water_body_label_paths.append(water_body_label_path)
 
         region_names.append(os.path.basename(vv_image_paths[i]).split("_")[0])
+        semantic_map_paths.append("")
 
     paths = {
         "vv_image_path": vv_image_paths,
@@ -59,6 +60,7 @@ def get_etci_df(dirname, split):
         "flood_label_path": flood_label_paths,
         "water_body_label_path": water_body_label_paths,
         "region": region_names,
+        "semantic_map_prev_level": semantic_map_paths,
     }
     return pd.DataFrame(paths)
 
