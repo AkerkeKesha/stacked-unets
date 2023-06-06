@@ -29,3 +29,19 @@ batch_size = 48
 learning_rate = 1e-3
 num_epochs = 20
 
+
+if dataset == 'etci':
+    SAMPLE_INDICES = [
+        2078,
+        2047,
+        2496,
+        2238,
+        1672,
+        1774,
+        1579,
+        1058,
+        1810,
+        625
+    ]
+else:
+    SAMPLE_INDICES = []
