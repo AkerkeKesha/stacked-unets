@@ -1,5 +1,4 @@
 import albumentations as A
-import numpy as np
 import pandas as pd
 from torch.utils.data import DataLoader
 from dataset import ETCIDataset, SN6Dataset
@@ -11,8 +10,7 @@ from utils import (
 import config
 
 
-def get_loader(dataset_name):
-
+def get_loader(dataset_name, train_df, val_df, test_df):
     transform = A.Compose([
         A.HorizontalFlip(p=0.5),
         A.VerticalFlip(p=0.5),
@@ -20,12 +18,10 @@ def get_loader(dataset_name):
     ])
 
     if dataset_name == "etci":
-        train_df, val_df, test_df = split_etci_data()
         train_dataset = ETCIDataset(dataframe=train_df, split="train", transform=transform)
         val_dataset = ETCIDataset(dataframe=val_df, split="valid", transform=None)
         test_dataset = ETCIDataset(dataframe=test_df, split="test", transform=None)
     else:
-        train_df, val_df, test_df = split_sn6_data()
         train_dataset = SN6Dataset(dataframe=train_df, split="train", transform=transform)
         val_dataset = SN6Dataset(dataframe=val_df, split="valid", transform=None)
         test_dataset = SN6Dataset(dataframe=test_df, split="test", transform=None)
@@ -40,12 +36,13 @@ def get_loader(dataset_name):
 def split_etci_data(test_size=0.1, val_size=0.1):
     original_df = get_etci_df(config.train_dir, split="train")
     original_df = cleanup_etci_data(original_df)
+    original_df = original_df.reset_index(drop=True)
 
-    train_df, temp_df = train_test_split(original_df, test_size=test_size + val_size, random_state=42)
+    train_df, temp_df = train_test_split(original_df, test_size=(test_size + val_size), random_state=42)
     adjusted_val_size = val_size / (test_size + val_size)
-    val_df, test_df = train_test_split(temp_df, test_size=1 - adjusted_val_size, random_state=42)
+    val_df, test_df = train_test_split(temp_df, test_size=(1 - adjusted_val_size), random_state=42)
     print(f"Split into train:{train_df.shape}, validation:{val_df.shape}, and test:{test_df.shape}")
-    return train_df, val_df, test_df
+    return original_df, train_df, val_df, test_df
 
 
 def split_sn6_data(test_size=0.1, val_size=0.1):
@@ -58,4 +55,4 @@ def split_sn6_data(test_size=0.1, val_size=0.1):
     train_df, temp_df = train_test_split(original_df, test_size=test_size + val_size, random_state=42)
     val_df, test_df = train_test_split(temp_df, test_size=test_size / (test_size + val_size), random_state=42)
     print(f"Split into train:{train_df.shape}, validation:{val_df.shape}, and test:{test_df.shape}")
-    return train_df, val_df, test_df
+    return original_df, train_df, val_df, test_df
