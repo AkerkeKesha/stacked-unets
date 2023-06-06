@@ -1,7 +1,7 @@
 # project specific
 dataset/
 *.log
-
+output/
 .venv/
 .idea/
 .DS_Store
