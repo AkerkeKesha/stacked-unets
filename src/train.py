@@ -18,10 +18,10 @@ def train(num_epochs, train_loader, val_loader, df_train, df_val,  n_levels=0):
     train_losses, val_losses = [], []
     train_ious, val_ious = [], []
     for level in range(n_levels + 1):
+        print(f"Level: [{level + 1} / {n_levels+1}]")
         for epoch in range(num_epochs):
             print(f"Epoch: [{epoch + 1} / {num_epochs}]")
             model.train()
-
             training_loss = 0
             iou_metric = IntersectionOverUnion(num_classes=2)
             try:
