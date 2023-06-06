@@ -19,7 +19,12 @@ class ETCIDataset(Dataset):
         df_row = self.dataset.iloc[index]
         vv_image = cv2.imread(df_row["vv_image_path"], 0) / 255.0
         vh_image = cv2.imread(df_row["vh_image_path"], 0) / 255.0
-        input_image = np.dstack((vv_image, vh_image))
+        semantic_map_path = df_row[f"semantic_map_prev_level"]
+        if semantic_map_path:
+            semantic_map = cv2.imread(semantic_map_path, 0) / 255.0
+            input_image = np.dstack((vv_image, vh_image, semantic_map))
+        else:
+            input_image = np.dstack((vv_image, vh_image))
         flood_mask = cv2.imread(df_row["flood_label_path"], 0) / 255.0
         if self.transform:
             augmented = self.transform(image=input_image, mask=flood_mask)
@@ -62,6 +67,7 @@ class SN6Dataset(Dataset):
             example["image"] = np.transpose(sar_image, (2, 0, 1)).astype('float32')
             example["mask"] = mask.astype('int64')
         return example
+
 
 
 
