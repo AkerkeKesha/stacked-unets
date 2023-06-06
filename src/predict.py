@@ -10,7 +10,7 @@ import config
 def predict(test_loader, df_test, n_levels=0):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = StackedUNet(n_levels=n_levels, base_model=basic_unet)
-    model.load_state_dict(torch.load(f"{config.output_dir}/single_unet_{config.dataset}.pt"))
+    model.load_state_dict(torch.load(f"{config.output_dir}/level_{n_levels}_unet_{config.dataset}.pt"))
     model.to(device)
     model.eval()
 
