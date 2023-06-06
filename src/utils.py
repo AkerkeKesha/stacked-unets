@@ -8,14 +8,14 @@ import logging
 import config
 import matplotlib.pyplot as plt
 
-logging.basicConfig(filename="single_Unet_training.log",
-                             filemode="w",
-                             format="%(name)s - %(levelname)s - %(message)s",)
-
-
-def get_logging():
-    # TODO: make sure logger works
-    return logging.getLogger()
+# logging.basicConfig(filename="single_Unet_training.log",
+#                              filemode="w",
+#                              format="%(name)s - %(levelname)s - %(message)s",)
+#
+#
+# def get_logging():
+#     # TODO: make sure logger works
+#     return logging.getLogger()
 
 
 def grayscale_to_rgb(vv_image, vh_image):
@@ -75,9 +75,11 @@ def cleanup_etci_data(df):
     return filtered_df
 
 
-def plot_single_prediction(image_id, prediction, output_dir, figure_size=(6, 6)):
+def plot_single_prediction(image_id, semantic_map_path, output_dir, figure_size=(6, 6)):
+    semantic_map = cv2.imread(semantic_map_path, 0)
     plt.figure(figsize=figure_size)
-    plt.imshow(prediction)
+    plt.imshow(semantic_map)
+    plt.axis('off')
     output_path = os.path.join(output_dir, f"prediction_{image_id}.png")
     plt.savefig(output_path, bbox_inches='tight')
     plt.close()
@@ -121,7 +123,15 @@ def visualize_image_and_masks(df_row, figure_size=(25, 15)):
         plt.title('Water body mask')
 
 
-def visualize_prediction(df_row, prediction, output_dir, figure_size=(25, 15)):
+def find_prediction_image(searched_value, df):
+    mask = df['vv_image_path'].str.endswith(searched_value)
+    return df.loc[mask].index[0]
+
+
+def visualize_prediction(prediction_image_name, original_df, labels_dir, figure_size=(25, 15)):
+    index = find_prediction_image(f'{prediction_image_name}.png', original_df)
+    df_row = original_df.iloc[index]
+
     vv_image = cv2.imread(df_row['vv_image_path'], 0) / 255.0
     vh_image = cv2.imread(df_row['vh_image_path'], 0) / 255.0
     rgb_input = grayscale_to_rgb(vv_image, vh_image)
@@ -129,21 +139,55 @@ def visualize_prediction(df_row, prediction, output_dir, figure_size=(25, 15)):
     water_body_label_path = df_row['water_body_label_path']
     water_body_label_image = cv2.imread(water_body_label_path, 0) / 255.0
 
-    plt.figure(figsize=figure_size)
-    plt.subplot(1, 3, 1)
-    plt.imshow(rgb_input)
-    plt.title('RGB w/ result')
-    plt.subplot(1, 3, 2)
-    plt.imshow(water_body_label_image)
-    plt.title('Water body mask')
-    plt.subplot(1, 3, 3)
-    plt.imshow(prediction)
-    plt.title('Prediction')
+    flood_label_path = df_row['flood_label_path']
+    flood_label_image = cv2.imread(flood_label_path, 0) / 255.0
 
     image_id = os.path.basename(df_row['vv_image_path']).split('.')[0]
-    output_path = os.path.join(output_dir, f"{image_id}_visualization.png")
-    plt.savefig(output_path, bbox_inches='tight')
-    plt.close()
+
+    prediction_path = f'{labels_dir}/prediction_{prediction_image_name}.png'
+    prediction = cv2.imread(prediction_path, 0)
+
+    plt.figure(figsize=figure_size)
+
+    plt.subplot(1, 4, 1)
+    plt.imshow(rgb_input)
+    plt.title(f'{image_id}')
+
+    plt.subplot(1, 4, 2)
+    plt.imshow(water_body_label_image)
+    plt.title('Water body mask')
+
+    plt.subplot(1, 4, 3)
+    plt.imshow(flood_label_image)
+    plt.title('Flood mask')
+
+    plt.subplot(1, 4, 4)
+    plt.imshow(prediction)
+    plt.title(f'Prediction {prediction_image_name}')
+    plt.show()
+
+
+def get_image_name_from_path(image_path: str):
+    """
+    Extracts the image name from the file path.
+    Example: 'path/to/image_vv.png' -> 'image'
+    """
+    base_name = os.path.basename(image_path)
+    image_name = os.path.splitext(base_name)[0]
+    return image_name
+
+
+def store_semantic_maps(df, n_levels, semantic_maps):
+    """
+    Stores the generated semantic maps in the DataFrame.
+    """
+    for i, df_row in df.iterrows():
+        image_path = df_row['vv_image_path']
+        image_name = get_image_name_from_path(image_path)
+        semantic_map = semantic_maps[i]
+        semantic_map_path = f"semantic_map_level_{n_levels}_image_{image_name}.png"
+        cv2.imwrite(semantic_map_path, semantic_map * 255)
+        df.at[i, f"semantic_map_prev_level"] = semantic_map_path
 
 
 def get_sn6_df(split, mode="SAR-Intensity"):
