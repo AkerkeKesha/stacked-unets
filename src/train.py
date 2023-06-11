@@ -77,8 +77,10 @@ def train(num_epochs, train_loader, val_loader, df_train, df_val,  n_levels=0):
                 semantic_maps = []
                 for batch in tqdm(loader):
                     image = batch["image"].to(device)
-                    semantic_map = model(image).argmax(dim=1).cpu().numpy()
-                    semantic_maps.extend(semantic_map)
+                    for img in image:
+                        img = img.unsqueeze(0)  # add batch dimension because model expects it
+                        semantic_map = model(img).argmax(dim=1).cpu().numpy()
+                        semantic_maps.append(semantic_map)
 
                 store_semantic_maps(df, n_levels, semantic_maps)
 
