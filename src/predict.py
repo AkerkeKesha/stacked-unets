@@ -20,16 +20,16 @@ def predict(test_loader, df_test, n_levels=0):
     try:
         with torch.no_grad():
             for i, batch in enumerate(tqdm(test_loader)):
-                images = batch["image"].to(device)
                 true_masks = batch["mask"].numpy()
+                for image, true_mask in zip(batch["image"], true_masks):
+                    image = image.unsqueeze(0).to(device)  # add batch dimension because model expects it
+                    pred = model(image)
+                    iou_metric.update(pred.detach().cpu().numpy(), true_mask)
 
-                preds = model(images)
-                iou_metric.update(preds.detach().cpu().numpy(), true_masks)
-
-                class_labels = preds.argmax(dim=1)
-                class_labels = class_labels.detach().cpu().numpy()
-                final_predictions.append(class_labels.astype("uint8"))
-                semantic_maps.append(class_labels.squeeze())
+                    class_label = pred.argmax(dim=1)
+                    class_label = class_label.detach().cpu().numpy()
+                    final_predictions.append(class_label.astype("uint8"))
+                    semantic_maps.append(class_label.squeeze())
 
     except Exception as te:
         print(f"An exception occurred during inference: {te}")
