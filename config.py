@@ -1,7 +1,7 @@
 import os
 
 environment = "colab"
-
+# environment = "local"
 if environment == "local":
     project_root = os.path.dirname(os.path.abspath(__file__))
 elif environment == "colab":
@@ -22,12 +22,12 @@ elif dataset == 'sn6':
     sn6_summary_datapath = os.path.join(train_dir, 'SummaryData', 'SN6_Train_AOI_11_Rotterdam_Buildings.csv')
 
 # hyperparameters
-num_workers = 2
-batch_size = 48
+num_workers = 1 if environment == "local" else 2
+batch_size = 2 if environment == "local" else 48
 
 # training related
 learning_rate = 1e-3
-num_epochs = 20
+num_epochs = 2 if environment == "local" else 20
 
 
 if dataset == 'etci':
