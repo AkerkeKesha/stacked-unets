@@ -78,3 +78,19 @@ def start_basic_unet():
     for index in config.SAMPLE_INDICES:
         visualize_prediction(image_ids[index], original_df, labels_dir)
     print(f"Finished visualizing some predictions.")
+
+
+def debug_start_basic_unet():
+    start = time.time()
+    print(f"{config.dataset}")
+    original_df, train_df, val_df, test_df = split_etci_data()
+    train_df = train_df[:100]
+    val_df = val_df[:100]
+    test_df = test_df[:100]
+    train_loader, val_loader, test_loader = get_loader("etci", train_df, val_df, test_df)
+    train_losses, val_losses, train_iou, val_iou = train(config.num_epochs, train_loader, val_loader, train_df, val_df)
+    print(f"{time.time() - start} seconds to train")
+
+
+if __name__ == '__main__':
+    debug_start_basic_unet()
