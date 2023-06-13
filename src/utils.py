@@ -4,7 +4,6 @@ import os
 import numpy as np
 import pandas as pd
 import cv2
-import logging
 import config
 import matplotlib.pyplot as plt
 
@@ -238,3 +237,19 @@ def get_sn6_test_image_ids(test_dir):
     image_ids = [os.path.basename(file_path).replace('SN6_Test_Public_AOI_11_Rotterdam_SAR-Intensity_', '')
                  .replace('.tif', '') for file_path in file_paths]
     return image_ids
+
+
+def debug_store_semantic_maps(df, n_levels, semantic_maps):
+    print(f"Length of df: {len(df)}")
+    print(f"Length of semantic_maps: {len(semantic_maps)}")
+
+    for i, df_row in df.iterrows():
+        print(f"Current index: {i}, Current semantic_maps length: {len(semantic_maps)}")
+        image_path = df_row['vv_image_path']
+        image_name = get_image_name_from_path(image_path)
+        semantic_map = semantic_maps[i][0] # access the first (and only) element in each item
+        semantic_map_path = f"semantic_map_level_{n_levels}_image_{image_name}.png"
+        cv2.imwrite(semantic_map_path, semantic_map * 255)
+        df.at[i, f"semantic_map_prev_level"] = semantic_map_path
+
+
