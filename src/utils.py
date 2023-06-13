@@ -1,4 +1,5 @@
 from glob import glob
+from typing import List
 import pathlib
 import os
 import numpy as np
@@ -171,14 +172,16 @@ def visualize_prediction(prediction_image_name, original_df, labels_dir, figure_
 def get_image_name_from_path(image_path: str):
     """
     Extracts the image name from the file path.
-    Example: 'path/to/image_vv.png' -> 'image'
+    Example: 'path/to/some_parts_of_image_vv.png' -> 'image'
     """
     base_name = os.path.basename(image_path)
-    image_name = os.path.splitext(base_name)[0]
+    # Split the base_name by '_', keep all but the last element, and join them back
+    image_name_parts = base_name.split('_')[:-1]
+    image_name = '_'.join(image_name_parts)
     return image_name
 
 
-def store_semantic_maps(df, n_levels, semantic_maps):
+def store_semantic_maps(df: pd.DataFrame, n_levels: int, semantic_maps: List):
     """
     Stores the generated semantic maps in the DataFrame.
     """
@@ -186,8 +189,7 @@ def store_semantic_maps(df, n_levels, semantic_maps):
         image_path = df_row["vv_image_path"]
         image_name = get_image_name_from_path(image_path)
         semantic_map = semantic_maps[i][0]  # access the first (and only) element in each item
-        semantic_map_path = f"{config.output_dir}/{config.dataset_name}_labels/" \
-                            f"semantic_map_level_{n_levels}_image_{image_name}.png"
+        semantic_map_path = f"{config.output_dir}/{config.dataset}_labels/semantic_map_level_{n_levels}_image_{image_name}.png"
         cv2.imwrite(semantic_map_path, semantic_map * 255)
         df.at[i, f"semantic_map_prev_level"] = semantic_map_path
 
