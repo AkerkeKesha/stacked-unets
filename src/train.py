@@ -3,7 +3,7 @@ import torch.nn as nn
 import config
 from tqdm.notebook import tqdm
 from model import StackedUNet, basic_unet
-from utils import store_semantic_maps
+from utils import debug_store_semantic_maps
 from evaluate import IntersectionOverUnion
 
 
@@ -70,9 +70,22 @@ def train(num_epochs, train_loader, val_loader, df_train, df_val,  n_levels=0):
             except Exception as ve:
                 print(f"An exception occurred during validation: {ve}")
                 continue
+        # for split, df, loader in [("train", df_train, train_loader), ("val", df_val, val_loader)]:
+        #     model.eval()
+        #     print(f"Generating semantic maps for {split} dataset...")
+        #     with torch.no_grad():
+        #         semantic_maps = []
+        #         for batch in tqdm(loader):
+        #             image = batch["image"].to(device)
+        #             for img in image:
+        #                 img = img.unsqueeze(0)  # add batch dimension because model expects it
+        #                 semantic_map = model(img).argmax(dim=1).cpu().numpy()
+        #                 semantic_maps.append(semantic_map)
+        #
+        #         store_semantic_maps(df, n_levels, semantic_maps)
         for split, df, loader in [("train", df_train, train_loader), ("val", df_val, val_loader)]:
             model.eval()
-            print(f"Generating semantic maps for {split} dataset...")
+            print(f"Generating semantic maps for {split} dataset...in debug")
             with torch.no_grad():
                 semantic_maps = []
                 for batch in tqdm(loader):
@@ -82,7 +95,7 @@ def train(num_epochs, train_loader, val_loader, df_train, df_val,  n_levels=0):
                         semantic_map = model(img).argmax(dim=1).cpu().numpy()
                         semantic_maps.append(semantic_map)
 
-                store_semantic_maps(df, n_levels, semantic_maps)
+                debug_store_semantic_maps(df, n_levels, semantic_maps)  # debug version
 
     torch.save(model.state_dict(), f"{config.output_dir}/level_{n_levels}_unet_{config.dataset}.pt")
     return train_losses, val_losses, train_ious, val_ious
