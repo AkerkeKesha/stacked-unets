@@ -78,7 +78,12 @@ def cleanup_etci_data(df):
 
 
 def plot_single_prediction(image_id, semantic_map_path, output_dir, figure_size=(6, 6)):
+    if not os.path.exists(semantic_map_path):
+        raise FileNotFoundError(f"File does not exist: {semantic_map_path}")
+
     semantic_map = cv2.imread(semantic_map_path, 0)
+    if not semantic_map:
+        raise FileNotFoundError(f"No file found or unable to read the file at: {semantic_map_path}")
     plt.figure(figsize=figure_size)
     plt.imshow(semantic_map)
     plt.axis('off')
