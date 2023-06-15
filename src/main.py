@@ -63,11 +63,11 @@ def start_basic_unet():
             vv_image_path = df_row["vv_image_path"]
             image_id = os.path.basename(vv_image_path).split('.')[0]
             semantic_map_path = df_row["semantic_map_prev_level"]
-            plot_single_prediction(image_id, semantic_map_path, f"{config.output_dir}/{config.dataset_name}_labels")
+            plot_single_prediction(image_id, semantic_map_path, f"{config.output_dir}/{config.dataset}_labels")
         print(f"Finished plotting batch {batch + 1}/{n_batches}")
     print(f"All predictions finished plotting")
 
-    labels_dir = os.path.join(config.output_dir, 'etci_labels')
+    labels_dir = os.path.join(config.output_dir, f'{config.dataset}_labels')
     image_ids = []
     for file_path in glob(f'{labels_dir}/*.png'):
         filename = os.path.basename(file_path)
