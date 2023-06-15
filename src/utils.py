@@ -77,7 +77,7 @@ def cleanup_etci_data(df):
     return filtered_df
 
 
-def plot_single_prediction(image_id, semantic_map_path, output_dir, figure_size=(6, 6)):
+def plot_single_prediction(image_name, semantic_map_path, output_dir, figure_size=(6, 6)):
     if not os.path.exists(semantic_map_path):
         raise FileNotFoundError(f"File does not exist: {semantic_map_path}")
 
@@ -87,7 +87,7 @@ def plot_single_prediction(image_id, semantic_map_path, output_dir, figure_size=
     plt.figure(figsize=figure_size)
     plt.imshow(semantic_map)
     plt.axis('off')
-    output_path = os.path.join(output_dir, f"prediction_{image_id}.png")
+    output_path = os.path.join(output_dir, f"prediction_{image_name}.png")
     plt.savefig(output_path, bbox_inches='tight')
     plt.close()
 
