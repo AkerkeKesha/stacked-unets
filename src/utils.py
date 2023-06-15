@@ -82,7 +82,7 @@ def plot_single_prediction(image_id, semantic_map_path, output_dir, figure_size=
         raise FileNotFoundError(f"File does not exist: {semantic_map_path}")
 
     semantic_map = cv2.imread(semantic_map_path, 0)
-    if not semantic_map:
+    if semantic_map is None or semantic_map.size == 0:
         raise FileNotFoundError(f"No file found or unable to read the file at: {semantic_map_path}")
     plt.figure(figsize=figure_size)
     plt.imshow(semantic_map)
