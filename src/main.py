@@ -8,7 +8,7 @@ import config
 from train import train
 from predict import predict
 from dataloader import get_loader, split_etci_data, split_sn6_data
-from utils import plot_single_prediction, visualize_prediction
+from utils import plot_single_prediction, visualize_prediction, get_image_name_from_path
 
 
 def start_basic_unet():
@@ -61,20 +61,17 @@ def start_basic_unet():
         for index in range(start, end):
             df_row = test_df.iloc[index]
             vv_image_path = df_row["vv_image_path"]
-            image_id = os.path.basename(vv_image_path).split('.')[0]
+            image_name = get_image_name_from_path(vv_image_path)
             semantic_map_path = df_row["semantic_map_prev_level"]
-            plot_single_prediction(image_id, semantic_map_path, f"{config.output_dir}/{config.dataset}_labels")
+            plot_single_prediction(image_name, semantic_map_path, f"{config.output_dir}/{config.dataset}_labels")
         print(f"Finished plotting batch {batch + 1}/{n_batches}")
     print(f"All predictions finished plotting")
 
     labels_dir = os.path.join(config.output_dir, f'{config.dataset}_labels')
     image_ids = []
     for file_path in glob(f'{labels_dir}/*.png'):
-        filename = os.path.basename(file_path)
-        parts = filename.split('_')
-        image_id = '_'.join(parts[1:]).split('.')[0]
-        image_ids.append(image_id)
-
+        image_name = get_image_name_from_path(file_path)
+        image_ids.append(image_name)
     for index in config.SAMPLE_INDICES:
         visualize_prediction(image_ids[index], original_df, labels_dir)
     print(f"Finished visualizing some predictions.")
