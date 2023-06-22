@@ -69,7 +69,7 @@ def visualize_results(original_df):
         image_id = '_'.join(parts[5:]).split('.')[0]
         image_ids.append(image_id)
     for index in config.SAMPLE_INDICES:
-        visualize_prediction(image_ids[index], original_df, labels_dir)
+        visualize_prediction(image_ids[index], original_df)
 
 
 def start_basic_unet():
