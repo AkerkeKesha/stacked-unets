@@ -135,8 +135,8 @@ def find_prediction_image(searched_value, df):
     return df.loc[mask].index[0]
 
 
-def visualize_prediction(prediction_image_name, original_df, labels_dir, figure_size=(25, 15)):
-    index = find_prediction_image(f'{prediction_image_name}.png', original_df)
+def visualize_prediction(prediction_image_name, original_df, figure_size=(25, 15)):
+    index = find_prediction_image(f'{prediction_image_name}_vv.png', original_df)
     df_row = original_df.iloc[index]
 
     vv_image = cv2.imread(df_row['vv_image_path'], 0) / 255.0
@@ -151,8 +151,8 @@ def visualize_prediction(prediction_image_name, original_df, labels_dir, figure_
 
     image_id = os.path.basename(df_row['vv_image_path']).split('.')[0]
 
-    prediction_path = f'{labels_dir}/prediction_{prediction_image_name}.png'
-    prediction = cv2.imread(prediction_path, 0)
+    prediction_path = df_row["semantic_map_prev_level"]
+    prediction = cv2.imread(prediction_path, 0) / 255.0
 
     plt.figure(figsize=figure_size)
 
