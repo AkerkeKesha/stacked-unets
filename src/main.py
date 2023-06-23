@@ -72,8 +72,9 @@ def visualize_results(original_df):
         visualize_prediction(image_ids[index], original_df)
 
 
-def start_basic_unet():
-    original_df, train_df, val_df, test_df, train_loader, val_loader, test_loader = load_data(config.dataset)
+def start_basic_unet(max_data_points=None):
+    original_df, train_df, val_df, test_df, train_loader, val_loader, test_loader \
+        = load_data(config.dataset, max_data_points=max_data_points)
     start = time.time()
     train_losses, val_losses, train_iou, val_iou = train(config.num_epochs, train_loader, val_loader, train_df, val_df)
     print(f"{time.time() - start} seconds to train")
