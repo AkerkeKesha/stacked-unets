@@ -131,8 +131,8 @@ def visualize_image_and_masks(df_row, figure_size=(25, 15)):
 
 def find_prediction_image(searched_value, df):
     mask = df['vv_image_path'].str.endswith(searched_value)
-    indices = df.loc[mask].index[0]
-    if indices.size > 0:
+    indices = df.loc[mask].index
+    if len(indices) > 0:
         return indices[0]
     else:
         print(f"No match found for {searched_value} in vv_image_path column")
