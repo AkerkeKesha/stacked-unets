@@ -83,8 +83,10 @@ def start_basic_unet():
     plot_metrics(['train_iou', 'val_iou'], ['Training Mean IoU', 'Validation Mean IoU'], 'iou_plot', config.num_epochs)
 
     final_predictions = predict(test_loader, test_df)
-    np.save(f'{config.output_dir}/predictions_{config.dataset}.npy', final_predictions, fix_imports=True, allow_pickle=False)
-
+    np.save(f'{config.output_dir}/predictions_{config.dataset}.npy',
+            final_predictions,
+            fix_imports=True,
+            allow_pickle=False)
     visualize_results(original_df)
     print(f"Finished visualizing some predictions.")
 
