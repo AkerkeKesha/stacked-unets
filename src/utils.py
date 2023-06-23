@@ -80,15 +80,14 @@ def cleanup_etci_data(df):
 def plot_single_prediction(image_name, semantic_map_path, output_dir, figure_size=(6, 6)):
     if not os.path.exists(semantic_map_path):
         raise FileNotFoundError(f"File does not exist: {semantic_map_path}")
-
     semantic_map = cv2.imread(semantic_map_path, 0)
     if semantic_map is None or semantic_map.size == 0:
         raise FileNotFoundError(f"No file found or unable to read the file at: {semantic_map_path}")
     plt.figure(figsize=figure_size)
     plt.imshow(semantic_map)
     plt.axis('off')
-    output_path = os.path.join(output_dir, f"prediction_{image_name}.png")
-    plt.savefig(output_path, bbox_inches='tight')
+    # output_path = os.path.join(output_dir, f"prediction_{image_name}.png")
+    # plt.savefig(output_path, bbox_inches='tight')
     plt.close()
 
 
@@ -132,46 +131,63 @@ def visualize_image_and_masks(df_row, figure_size=(25, 15)):
 
 def find_prediction_image(searched_value, df):
     mask = df['vv_image_path'].str.endswith(searched_value)
-    return df.loc[mask].index[0]
+    indices = df.loc[mask].index[0]
+    if indices.size > 0:
+        return indices[0]
+    else:
+        print(f"No match found for {searched_value} in vv_image_path column")
+        return None
 
 
 def visualize_prediction(prediction_image_name, original_df, figure_size=(25, 15)):
     index = find_prediction_image(f'{prediction_image_name}_vv.png', original_df)
-    df_row = original_df.iloc[index]
+    if index is not None:
+        df_row = original_df.iloc[index]
 
-    vv_image = cv2.imread(df_row['vv_image_path'], 0) / 255.0
-    vh_image = cv2.imread(df_row['vh_image_path'], 0) / 255.0
-    rgb_input = grayscale_to_rgb(vv_image, vh_image)
+        vv_image = cv2.imread(df_row['vv_image_path'], 0) / 255.0
+        vh_image = cv2.imread(df_row['vh_image_path'], 0) / 255.0
+        rgb_input = grayscale_to_rgb(vv_image, vh_image)
 
-    water_body_label_path = df_row['water_body_label_path']
-    water_body_label_image = cv2.imread(water_body_label_path, 0) / 255.0
+        water_body_label_path = df_row['water_body_label_path']
+        water_body_label_image = cv2.imread(water_body_label_path, 0) / 255.0
 
-    flood_label_path = df_row['flood_label_path']
-    flood_label_image = cv2.imread(flood_label_path, 0) / 255.0
+        flood_label_path = df_row['flood_label_path']
+        flood_label_image = cv2.imread(flood_label_path, 0) / 255.0
 
-    image_id = os.path.basename(df_row['vv_image_path']).split('.')[0]
+        image_id = os.path.basename(df_row['vv_image_path']).split('.')[0]
 
-    prediction_path = df_row["semantic_map_prev_level"]
-    prediction = cv2.imread(prediction_path, 0) / 255.0
+        prediction_path = df_row["semantic_map_prev_level"]
+        if not os.path.exists(prediction_path):
+            raise FileNotFoundError(f"File does not exist: {prediction_path}")
+        if prediction_path is None or prediction_path.size == 0:
+            raise FileNotFoundError(f"Unable to read the image file: {prediction_image_name}")
 
-    plt.figure(figsize=figure_size)
+        prediction = cv2.imread(prediction_path, 0)
+        if prediction is None:
+            raise FileNotFoundError(f"Unable to load the image: {prediction_image_name}")
 
-    plt.subplot(1, 4, 1)
-    plt.imshow(rgb_input)
-    plt.title(f'{image_id}')
+        prediction /= 255.0
 
-    plt.subplot(1, 4, 2)
-    plt.imshow(water_body_label_image)
-    plt.title('Water body mask')
+        plt.figure(figsize=figure_size)
 
-    plt.subplot(1, 4, 3)
-    plt.imshow(flood_label_image)
-    plt.title('Flood mask')
+        plt.subplot(1, 4, 1)
+        plt.imshow(rgb_input)
+        plt.title(f'{image_id}')
 
-    plt.subplot(1, 4, 4)
-    plt.imshow(prediction)
-    plt.title(f'Prediction {prediction_image_name}')
-    plt.show()
+        plt.subplot(1, 4, 2)
+        plt.imshow(water_body_label_image)
+        plt.title('Water body mask')
+
+        plt.subplot(1, 4, 3)
+        plt.imshow(flood_label_image)
+        plt.title('Flood mask')
+
+        plt.subplot(1, 4, 4)
+        plt.imshow(prediction)
+        plt.title(f'Prediction {prediction_image_name}')
+        plt.show()
+    else:
+        print(f"Skipping visualization for {prediction_image_name} due to missing data")
 
 
 def get_image_name_from_path(image_path: str):
