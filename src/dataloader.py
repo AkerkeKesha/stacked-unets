@@ -33,10 +33,12 @@ def get_loader(dataset_name, train_df, val_df, test_df):
     return train_loader, val_loader, test_loader
 
 
-def split_etci_data(test_size=0.1, val_size=0.1):
+def split_etci_data(test_size=0.1, val_size=0.1, max_data_points=None):
     original_df = get_etci_df(config.train_dir, split="train")
     original_df = cleanup_etci_data(original_df)
     original_df = original_df.reset_index(drop=True)
+    if max_data_points:
+        original_df = original_df[:max_data_points]
 
     train_df, temp_df = train_test_split(original_df, test_size=(test_size + val_size), random_state=42)
     adjusted_val_size = val_size / (test_size + val_size)
@@ -45,7 +47,7 @@ def split_etci_data(test_size=0.1, val_size=0.1):
     return original_df, train_df, val_df, test_df
 
 
-def split_sn6_data(test_size=0.1, val_size=0.1):
+def split_sn6_data(test_size=0.1, val_size=0.1, max_data_points=None):
     original_df = get_sn6_df(split="train")
     summary_df = pd.read_csv(config.sn6_summary_datapath)
     image_ids = summary_df.ImageId.unique()
