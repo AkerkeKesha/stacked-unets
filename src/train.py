@@ -82,10 +82,13 @@ def train(num_epochs, train_loader, val_loader, df_train, df_val,  n_levels=0):
                         semantic_map = model(img).argmax(dim=1).cpu().numpy()
                         semantic_maps.append(semantic_map)
 
-                store_semantic_maps(df, n_levels, semantic_maps)
+                if split == "train":
+                    df_train = store_semantic_maps(df, n_levels, semantic_maps)
+                elif split == "val":
+                    df_val = store_semantic_maps(df, n_levels, semantic_maps)
 
     torch.save(model.state_dict(), f"{config.output_dir}/level_{n_levels}_unet_{config.dataset}.pt")
-    return train_losses, val_losses, train_ious, val_ious
+    return train_losses, val_losses, train_ious, val_ious, df_train, df_val
 
 
 
