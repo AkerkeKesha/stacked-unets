@@ -159,7 +159,7 @@ def visualize_prediction(prediction_image_name, original_df, figure_size=(25, 15
         prediction_path = df_row["semantic_map_prev_level"]
         if not os.path.exists(prediction_path):
             raise FileNotFoundError(f"File does not exist: {prediction_path}")
-        if prediction_path is None or prediction_path.size == 0:
+        if prediction_path is None or len(prediction_path) == 0:
             raise FileNotFoundError(f"Unable to read the image file: {prediction_image_name}")
 
         prediction = cv2.imread(prediction_path, 0)
