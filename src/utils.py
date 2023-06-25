@@ -162,11 +162,9 @@ def visualize_prediction(prediction_image_name, original_df, figure_size=(25, 15
         if prediction_path is None or len(prediction_path) == 0:
             raise FileNotFoundError(f"Unable to read the image file: {prediction_image_name}")
 
-        prediction = cv2.imread(prediction_path, 0)
+        prediction = cv2.imread(prediction_path, 0) / 255.0
         if prediction is None:
             raise FileNotFoundError(f"Unable to load the image: {prediction_image_name}")
-
-        prediction /= 255.0
 
         plt.figure(figsize=figure_size)
 
