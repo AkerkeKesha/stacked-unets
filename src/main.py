@@ -2,6 +2,7 @@ import time
 import math
 import os
 import numpy as np
+import pandas as pd
 from glob import glob
 import matplotlib.pyplot as plt
 import config
@@ -76,19 +77,21 @@ def start_basic_unet(max_data_points=None):
     original_df, train_df, val_df, test_df, train_loader, val_loader, test_loader \
         = load_data(config.dataset, max_data_points=max_data_points)
     start = time.time()
-    train_losses, val_losses, train_iou, val_iou = train(config.num_epochs, train_loader, val_loader, train_df, val_df)
+    train_losses, val_losses, train_iou, val_iou, train_df, val_df \
+        = train(config.num_epochs, train_loader, val_loader, train_df, val_df)
     print(f"{time.time() - start} seconds to train")
 
     save_metrics(train_iou, train_losses, val_iou, val_losses)
     plot_metrics(['train_losses', 'val_losses'], ['Training Loss', 'Validation Loss'], 'loss_plot', config.num_epochs)
     plot_metrics(['train_iou', 'val_iou'], ['Training Mean IoU', 'Validation Mean IoU'], 'iou_plot', config.num_epochs)
 
-    final_predictions = predict(test_loader, test_df)
+    final_predictions, test_df = predict(test_loader, test_df)
     np.save(f'{config.output_dir}/predictions_{config.dataset}.npy',
             final_predictions,
             fix_imports=True,
             allow_pickle=False)
-    visualize_results(original_df)
+    updated_df = pd.concat([train_df, val_df, test_df])
+    visualize_results(updated_df)
     print(f"Finished visualizing some predictions.")
 
 
