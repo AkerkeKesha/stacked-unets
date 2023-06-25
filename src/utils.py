@@ -213,6 +213,7 @@ def store_semantic_maps(df: pd.DataFrame, n_levels: int, semantic_maps: List):
         semantic_map_path = f"{config.output_dir}/{config.dataset}_labels/semantic_map_level_{n_levels}_image_{image_name}.png"
         cv2.imwrite(semantic_map_path, semantic_map * 255)
         df.at[_, f"semantic_map_prev_level"] = semantic_map_path
+    return df
 
 
 def get_sn6_df(split, mode="SAR-Intensity"):
