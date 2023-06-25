@@ -5,12 +5,20 @@ from copy import deepcopy
 
 
 class StackedUNet(nn.Module):
-    def __init__(self, n_levels, base_model):
+    def __init__(self, n_levels):
         super().__init__()
         self.n_levels = n_levels
-        self.base_model = base_model
+
+        self.base_model = smp.Unet(
+            encoder_name="resnet18",
+            encoder_weights=None,
+            decoder_use_batchnorm=False,
+            in_channels=2 if n_levels == 0 else 4,
+            classes=2,
+        )
+
         if n_levels > 0:
-            self.models = nn.ModuleList([deepcopy(base_model) for _ in range(n_levels)])
+            self.models = nn.ModuleList([deepcopy(self.base_model) for _ in range(n_levels)])
         else:
             self.models = None
 
@@ -22,13 +30,4 @@ class StackedUNet(nn.Module):
             return out
         else:
             return self.base_model(x)
-
-
-basic_unet = smp.Unet(
-        encoder_name="resnet18",
-        encoder_weights=None,
-        decoder_use_batchnorm=False,
-        in_channels=4 if config.dataset == "sn6" else 2,
-        classes=2,
-)
 
