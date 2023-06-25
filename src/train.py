@@ -2,14 +2,14 @@ import torch.optim
 import torch.nn as nn
 import config
 from tqdm.notebook import tqdm
-from model import StackedUNet, basic_unet
+from model import StackedUNet
 from utils import store_semantic_maps
 from evaluate import IntersectionOverUnion
 
 
 def train(num_epochs, train_loader, val_loader, df_train, df_val,  n_levels=0):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = StackedUNet(n_levels=n_levels, base_model=basic_unet)
+    model = StackedUNet(n_levels=n_levels)
     model.to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
