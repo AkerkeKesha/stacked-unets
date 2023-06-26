@@ -49,21 +49,6 @@ def plot_metrics_per_level(metric_names, metric_labels, plot_filename, num_epoch
         plt.show()
 
 
-def plot_predictions(test_df):
-    n_batches = math.ceil(len(test_df) / config.batch_size)
-    for batch in range(n_batches):
-        start = batch * config.batch_size
-        end = min((batch + 1) * config.batch_size, len(test_df))
-        for index in range(start, end):
-            df_row = test_df.iloc[index]
-            vv_image_path = df_row["vv_image_path"]
-            image_name = get_image_name_from_path(vv_image_path)
-            semantic_map_path = df_row["semantic_map_prev_level"]
-            plot_single_prediction(image_name, semantic_map_path, f"{config.output_dir}/{config.dataset}_labels")
-        print(f"Finished plotting batch {batch + 1}/{n_batches}")
-    print(f"All predictions finished plotting")
-
-
 def visualize_results(original_df):
     labels_dir = os.path.join(config.output_dir, f'{config.dataset}_labels')
     image_ids = []
