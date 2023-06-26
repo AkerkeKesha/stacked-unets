@@ -1,16 +1,16 @@
 import torch
 import numpy as np
 from tqdm import tqdm
-from model import StackedUNet
+from model import UNet
 from evaluate import IntersectionOverUnion
 from utils import store_semantic_maps
 import config
 
 
-def predict(test_loader, df_test, n_levels=0):
+def predict(test_loader, df_test, level=0):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = StackedUNet(n_levels=n_levels)
-    model.load_state_dict(torch.load(f"{config.output_dir}/level_{n_levels}_unet_{config.dataset}.pt"))
+    model = UNet()
+    model.load_state_dict(torch.load(f"{config.output_dir}/level_{level}_unet_{config.dataset}.pt"))
     model.to(device)
     model.eval()
 
@@ -36,6 +36,6 @@ def predict(test_loader, df_test, n_levels=0):
     mean_iou = iou_metric.mean_iou()
     print(f"Mean IoU for the test dataset: {mean_iou}")
     final_predictions = np.concatenate(final_predictions, axis=0)
-    df_test = store_semantic_maps(df_test, n_levels, semantic_maps)
+    df_test = store_semantic_maps(df_test, level, semantic_maps)
     print(f"Semantic maps for next level are stored")
-    return final_predictions, df_test
+    return final_predictions, df_test, mean_iou
