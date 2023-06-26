@@ -20,7 +20,6 @@ def train(num_epochs, train_loader, val_loader, df_train, df_val,  n_levels=0):
     for level in range(n_levels + 1):
         print(f"Level: [{level + 1} / {n_levels+1}]")
         for epoch in range(num_epochs):
-            print(f"Epoch: [{epoch + 1} / {num_epochs}]")
             model.train()
             training_loss = 0
             iou_metric = IntersectionOverUnion(num_classes=2)
@@ -40,12 +39,16 @@ def train(num_epochs, train_loader, val_loader, df_train, df_val,  n_levels=0):
                 continue
 
             mean_iou = iou_metric.mean_iou()
-            print(f"Train mean IoU = {mean_iou:.4f}")
+
             train_ious.append(mean_iou)
             iou_metric.reset()
             training_loss = training_loss / len(train_loader)
-            print(f"Train mean loss = {training_loss:.4f}")
             train_losses.append(training_loss)
+
+            if (epoch + 1) % 5 == 0:
+                print(f"Epoch: [{epoch + 1} / {num_epochs}]")
+                print(f"Train mean IoU = {mean_iou:.4f}")
+                print(f"Train mean loss = {training_loss:.4f}")
 
             model.eval()
             iou_metric = IntersectionOverUnion(num_classes=2)
@@ -61,12 +64,15 @@ def train(num_epochs, train_loader, val_loader, df_train, df_val,  n_levels=0):
                         iou_metric.update(pred.detach().cpu().numpy(), mask.cpu().numpy())
 
                     mean_iou = iou_metric.mean_iou()
-                    print(f"Val mean IoU = {mean_iou:.4f}")
                     val_ious.append(mean_iou)
                     iou_metric.reset()
                     val_loss = val_loss / len(val_loader)
-                    print(f"Val mean loss = {val_loss:.4f}")
                     val_losses.append(val_loss)
+
+                    if (epoch + 1) % 5 == 0:
+                        print(f"Val mean IoU = {mean_iou:.4f}")
+                        print(f"Val mean loss = {val_loss:.4f}")
+
             except Exception as ve:
                 print(f"An exception occurred during validation: {ve}")
                 continue
