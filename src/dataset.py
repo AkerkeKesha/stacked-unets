@@ -42,10 +42,11 @@ class ETCIDataset(Dataset):
 
 
 class SN6Dataset(Dataset):
-    def __init__(self, dataframe, split, transform=None):
+    def __init__(self, dataframe, split, n_levels, transform=None):
         self.dataframe = dataframe
         self.transforms = transform
         self.split = split
+        self.n_levels = n_levels
 
     def __len__(self):
         return self.dataframe.shape[0]
