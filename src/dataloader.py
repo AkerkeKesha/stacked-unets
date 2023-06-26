@@ -10,7 +10,7 @@ from utils import (
 import config
 
 
-def get_loader(dataset_name, train_df, val_df, test_df):
+def get_loader(dataset_name, train_df, val_df, test_df, n_levels=0):
     transform = A.Compose([
         A.HorizontalFlip(p=0.5),
         A.VerticalFlip(p=0.5),
@@ -18,13 +18,13 @@ def get_loader(dataset_name, train_df, val_df, test_df):
     ])
 
     if dataset_name == "etci":
-        train_dataset = ETCIDataset(dataframe=train_df, split="train", transform=transform)
-        val_dataset = ETCIDataset(dataframe=val_df, split="valid", transform=None)
-        test_dataset = ETCIDataset(dataframe=test_df, split="test", transform=None)
+        train_dataset = ETCIDataset(dataframe=train_df, split="train", n_levels=n_levels, transform=transform)
+        val_dataset = ETCIDataset(dataframe=val_df, split="valid", n_levels=n_levels, transform=None)
+        test_dataset = ETCIDataset(dataframe=test_df, split="test", n_levels=n_levels, transform=None)
     else:
         train_dataset = SN6Dataset(dataframe=train_df, split="train", transform=transform)
-        val_dataset = SN6Dataset(dataframe=val_df, split="valid", transform=None)
-        test_dataset = SN6Dataset(dataframe=test_df, split="test", transform=None)
+        val_dataset = SN6Dataset(dataframe=val_df, split="valid", n_levels=n_levels, transform=None)
+        test_dataset = SN6Dataset(dataframe=test_df, split="test", n_levels=n_levels, transform=None)
 
     train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True, num_workers=config.num_workers)
     val_loader = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=False, num_workers=config.num_workers)
