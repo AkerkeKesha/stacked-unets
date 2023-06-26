@@ -5,11 +5,12 @@ from torch.utils.data import Dataset
 
 
 class ETCIDataset(Dataset):
-    def __init__(self, dataframe, split, transform=None):
+    def __init__(self, dataframe, split, n_levels, transform=None):
         self.dataset = dataframe
         self.split = split
         self.transform = transform
         self.indices = list(range(len(dataframe)))
+        self.n_levels = n_levels
 
     def __len__(self):
         return self.dataset.shape[0]
@@ -19,12 +20,17 @@ class ETCIDataset(Dataset):
         df_row = self.dataset.iloc[index]
         vv_image = cv2.imread(df_row["vv_image_path"], 0) / 255.0
         vh_image = cv2.imread(df_row["vh_image_path"], 0) / 255.0
-        semantic_map_path = df_row[f"semantic_map_prev_level"]
-        if semantic_map_path:
-            semantic_map = cv2.imread(semantic_map_path, 0) / 255.0
-            input_image = np.dstack((vv_image, vh_image, semantic_map))
+
+        if self.n_levels > 0:
+            semantic_map_path = df_row[f"semantic_map_prev_level"]
+            if semantic_map_path:
+                semantic_map = cv2.imread(semantic_map_path, 0) / 255.0
+                input_image = np.dstack((vv_image, vh_image, semantic_map))
+            else:
+                raise ValueError("Semantic map not found for data sample where expected")
         else:
             input_image = np.dstack((vv_image, vh_image))
+
         flood_mask = cv2.imread(df_row["flood_label_path"], 0) / 255.0
         if self.transform:
             augmented = self.transform(image=input_image, mask=flood_mask)
