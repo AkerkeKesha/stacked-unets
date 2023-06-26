@@ -80,25 +80,31 @@ def visualize_results(original_df):
 def start_basic_unet(n_levels=0, max_data_points=None):
     original_df, train_df, val_df, test_df, train_loader, val_loader, test_loader \
         = load_data(config.dataset, n_levels=n_levels, max_data_points=max_data_points)
-    start = time.time()
-    train_losses, val_losses, train_iou, val_iou, train_df, val_df \
-        = train(config.num_epochs, train_loader, val_loader, train_df, val_df, n_levels=n_levels)
-    print(f"{time.time() - start} seconds to train")
+    test_mean_iou_levels = []
+    timing_levels = []
+    for level in range(n_levels + 1):
+        start = time.time()
+        train_losses, val_losses, train_iou, val_iou, train_df, val_df \
+            = train(config.num_epochs, train_loader, val_loader, train_df, val_df, level=level)
+        timing_levels.append(time.time() - start)
+        save_metrics(train_iou, train_losses, val_iou, val_losses)
+        plot_metrics_per_level(['train_losses', 'val_losses'], ['Training Loss', 'Validation Loss'],
+                               'loss_plot', config.num_epochs, level)
+        plot_metrics_per_level(['train_iou', 'val_iou'], ['Training Mean IoU', 'Validation Mean IoU'],
+                               'iou_plot', config.num_epochs, level)
 
-    save_metrics(train_iou, train_losses, val_iou, val_losses)
-    plot_metrics_per_level(['train_losses', 'val_losses'], ['Training Loss', 'Validation Loss'],
-                           'loss_plot', config.num_epochs, n_levels)
-    plot_metrics_per_level(['train_iou', 'val_iou'], ['Training Mean IoU', 'Validation Mean IoU'],
-                           'iou_plot', config.num_epochs, n_levels)
-
-    final_predictions, test_df = predict(test_loader, test_df, n_levels=n_levels)
-    np.save(f'{config.output_dir}/predictions_{config.dataset}.npy',
-            final_predictions,
-            fix_imports=True,
-            allow_pickle=False)
-    updated_df = pd.concat([train_df, val_df, test_df])
-    visualize_results(updated_df)
-    print(f"Finished visualizing some predictions.")
+        final_predictions, test_df, mean_iou = predict(test_loader, test_df, level=level)
+        test_mean_iou_levels.append(mean_iou)
+        np.save(f'{config.output_dir}/predictions_{config.dataset}.npy',
+                final_predictions,
+                fix_imports=True,
+                allow_pickle=False)
+        updated_df = pd.concat([train_df, val_df, test_df])
+        visualize_results(updated_df)
+        print(f"Finished visualizing some predictions for level {level}.")
+    np.save(f'{config.output_dir}/mean_iou_levels_{config.dataset}.npy', np.array(test_mean_iou_levels))
+    np.save(f'{config.output_dir}/timings_levels_{config.dataset}.npy', np.array(timing_levels))
+    print(f"All levels finished")
 
 
 
