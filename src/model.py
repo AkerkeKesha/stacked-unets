@@ -13,7 +13,7 @@ class StackedUNet(nn.Module):
             encoder_name="resnet18",
             encoder_weights=None,
             decoder_use_batchnorm=False,
-            in_channels=2 if n_levels == 0 else 3,
+            in_channels=3 if config.dataset == "etci" else 4,
             classes=2,
         )
 
