@@ -83,6 +83,7 @@ def start_basic_unet(n_levels=0, max_data_points=None):
     test_mean_iou_levels = []
     timing_levels = []
     for level in range(n_levels + 1):
+        print(f"Level: [{level + 1} / {n_levels + 1}]")
         start = time.time()
         train_losses, val_losses, train_iou, val_iou, train_df, val_df \
             = train(config.num_epochs, train_loader, val_loader, train_df, val_df, level=level)
