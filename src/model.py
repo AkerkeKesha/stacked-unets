@@ -13,7 +13,7 @@ class StackedUNet(nn.Module):
             encoder_name="resnet18",
             encoder_weights=None,
             decoder_use_batchnorm=False,
-            in_channels=2 if n_levels == 0 else 4,
+            in_channels=2 if n_levels == 0 else 3,
             classes=2,
         )
 
