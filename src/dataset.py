@@ -5,12 +5,11 @@ from torch.utils.data import Dataset
 
 
 class ETCIDataset(Dataset):
-    def __init__(self, dataframe, split, n_levels, transform=None):
+    def __init__(self, dataframe, split, transform=None):
         self.dataset = dataframe
         self.split = split
         self.transform = transform
         self.indices = list(range(len(dataframe)))
-        self.n_levels = n_levels
 
     def __len__(self):
         return self.dataset.shape[0]
@@ -40,11 +39,10 @@ class ETCIDataset(Dataset):
 
 
 class SN6Dataset(Dataset):
-    def __init__(self, dataframe, split, n_levels, transform=None):
+    def __init__(self, dataframe, split, transform=None):
         self.dataframe = dataframe
         self.transforms = transform
         self.split = split
-        self.n_levels = n_levels
 
     def __len__(self):
         return self.dataframe.shape[0]
