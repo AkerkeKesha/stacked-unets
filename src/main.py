@@ -12,13 +12,13 @@ from dataloader import get_loader, split_etci_data, split_sn6_data
 from utils import plot_single_prediction, visualize_prediction, get_image_name_from_path
 
 
-def load_data(dataset, n_levels=0, max_data_points=None):
+def load_data(dataset, max_data_points=None):
     if dataset == "etci":
         original_df, train_df, val_df, test_df = split_etci_data(max_data_points=max_data_points)
-        train_loader, val_loader, test_loader = get_loader("etci", train_df, val_df, test_df, n_levels=n_levels)
+        train_loader, val_loader, test_loader = get_loader("etci", train_df, val_df, test_df)
     else:
         original_df, train_df, val_df, test_df = split_sn6_data(max_data_points=max_data_points)
-        train_loader, val_loader, test_loader = get_loader("sn6", train_df, val_df, test_df, n_levels=n_levels)
+        train_loader, val_loader, test_loader = get_loader("sn6", train_df, val_df, test_df)
     return original_df, train_df, val_df, test_df, train_loader, val_loader, test_loader
 
 
@@ -77,13 +77,13 @@ def visualize_results(original_df):
         visualize_prediction(image_ids[index], original_df)
 
 
-def start_basic_unet(n_levels=0, max_data_points=None):
+def start_basic_unet(n_levels=1, max_data_points=None):
     original_df, train_df, val_df, test_df, train_loader, val_loader, test_loader \
-        = load_data(config.dataset, n_levels=n_levels, max_data_points=max_data_points)
+        = load_data(config.dataset, max_data_points=max_data_points)
     test_mean_iou_levels = []
     timing_levels = []
-    for level in range(n_levels + 1):
-        print(f"Level: [{level + 1} / {n_levels + 1}]")
+    for level in range(n_levels):
+        print(f"Level: [{level + 1} / {n_levels}]")
         start = time.time()
         train_losses, val_losses, train_iou, val_iou, train_df, val_df \
             = train(config.num_epochs, train_loader, val_loader, train_df, val_df, level=level)
