@@ -21,15 +21,13 @@ class ETCIDataset(Dataset):
         vv_image = cv2.imread(df_row["vv_image_path"], 0) / 255.0
         vh_image = cv2.imread(df_row["vh_image_path"], 0) / 255.0
 
-        if self.n_levels > 0:
-            semantic_map_path = df_row[f"semantic_map_prev_level"]
-            if semantic_map_path:
-                semantic_map = cv2.imread(semantic_map_path, 0) / 255.0
-                input_image = np.dstack((vv_image, vh_image, semantic_map))
-            else:
-                raise ValueError("Semantic map not found for data sample where expected")
+        semantic_map_path = df_row[f"semantic_map_prev_level"]
+        if semantic_map_path:
+            semantic_map = cv2.imread(semantic_map_path, 0) / 255.0
+            input_image = np.dstack((vv_image, vh_image, semantic_map))
         else:
-            input_image = np.dstack((vv_image, vh_image))
+            dummy_channel = np.zeros_like(vv_image)
+            input_image = np.dstack((vv_image, vh_image, dummy_channel))
 
         flood_mask = cv2.imread(df_row["flood_label_path"], 0) / 255.0
         if self.transform:
