@@ -34,9 +34,13 @@ if dataset == "etci":
     SAMPLE_IMAGES = [
         "bangladesh_20170606t115613_x-33_y-29",
         "bangladesh_20170314t115609_x-11_y-20",
-        "nebraska_20171210t002119_x-13_y-28",
-        "northal_20191227t234659_x-9_y-9",
         "bangladesh_20170314t115609_x-2_y-39",
+        "nebraska_20171210t002119_x-13_y-28",
+        "nebraska_20170731t002118_x-9_y-26",
+        "nebraska_20170731t002118_x-10_y-14",
+        "northal_20191227t234659_x-9_y-9",
+        "northal_20190407t234651_x-19_y-18",
+        "northal_20190712t234656_x-5_y-25",
     ]
 else:
     SAMPLE_INDICES = []
