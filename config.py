@@ -31,17 +31,12 @@ num_epochs = 2 if environment == "local" else 20
 
 
 if dataset == "etci":
-    SAMPLE_INDICES = [
-        2078,
-        2047,
-        2496,
-        2238,
-        1672,
-        1774,
-        1579,
-        1058,
-        1810,
-        625
+    SAMPLE_IMAGES = [
+        "bangladesh_20170606t115613_x-33_y-29",
+        "bangladesh_20170314t115609_x-11_y-20",
+        "nebraska_20171210t002119_x-13_y-28",
+        "northal_20191227t234659_x-9_y-9",
+        "bangladesh_20170314t115609_x-2_y-39",
     ]
 else:
     SAMPLE_INDICES = []
