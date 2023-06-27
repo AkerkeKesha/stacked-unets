@@ -44,7 +44,7 @@ def train(num_epochs, train_loader, val_loader, df_train, df_val, level=0):
         training_loss = training_loss / len(train_loader)
         train_losses.append(training_loss)
 
-        if (epoch + 1) % 5 == 0:
+        if (epoch + 1) % 10 == 0:
             print(f"Epoch: [{epoch + 1} / {num_epochs}]")
             print(f"Train mean IoU = {mean_iou:.4f}")
             print(f"Train mean loss = {training_loss:.4f}")
@@ -68,7 +68,7 @@ def train(num_epochs, train_loader, val_loader, df_train, df_val, level=0):
                 val_loss = val_loss / len(val_loader)
                 val_losses.append(val_loss)
 
-                if (epoch + 1) % 5 == 0:
+                if (epoch + 1) % 10 == 0:
                     print(f"Val mean IoU = {mean_iou:.4f}")
                     print(f"Val mean loss = {val_loss:.4f}")
 
