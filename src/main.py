@@ -35,16 +35,16 @@ def save_metrics(train_iou, train_losses, val_iou, val_losses):
     print(f"Done saving evaluation metrics/losses on train/val")
 
 
-def plot_metrics_per_level(metric_names, metric_labels, plot_filename, num_epochs, n_levels=0):
+def plot_metrics_per_level(metric_names, metric_labels, plot_filename, num_epochs, n_levels=1):
     assert len(metric_names) == len(metric_labels), "Mismatch in number of metrics and labels."
     epochs = range(1, num_epochs + 1)
 
-    for level in range(n_levels + 1):
+    for level in range(n_levels):
         plt.figure(figsize=(10, 6))
         for metric_name, metric_label in zip(metric_names, metric_labels):
             metric_values = np.load(f'{config.output_dir}/{metric_name}_{config.dataset}.npy')
             level_metric_values = metric_values[level * num_epochs : (level + 1) * num_epochs]
-            plt.plot(epochs, level_metric_values, label=f"Level {level}: {metric_label}")
+            plt.plot(epochs, level_metric_values, label=f"{metric_label}")
 
         plt.xlabel("Epoch")
         plt.title(f"Metrics for level {level}")
@@ -79,13 +79,6 @@ def start_basic_unet(n_levels=1, max_data_points=None):
             = train(config.num_epochs, train_loader, val_loader, train_df, val_df, level=level)
         timing_levels.append(time.time() - start)
         save_metrics(train_iou, train_losses, val_iou, val_losses)
-        plot_metrics_per_level(['train_losses', 'val_losses'],
-                               ['Training Loss', 'Validation Loss'],
-                               'loss_plot', config.num_epochs, level)
-        plot_metrics_per_level(['train_iou', 'val_iou'],
-                               ['Training Mean IoU', 'Validation Mean IoU'],
-                               'iou_plot', config.num_epochs, level)
-
         final_predictions, test_df, mean_iou = predict(test_loader, test_df, level=level)
         test_mean_iou_levels.append(mean_iou)
         np.save(f'{config.output_dir}/predictions_{config.dataset}.npy',
@@ -98,6 +91,17 @@ def start_basic_unet(n_levels=1, max_data_points=None):
     np.save(f'{config.output_dir}/mean_iou_levels_{config.dataset}.npy', np.array(test_mean_iou_levels))
     np.save(f'{config.output_dir}/timings_levels_{config.dataset}.npy', np.array(timing_levels))
     print(f"All levels finished")
+
+
+def show_results(n_levels=1):
+    for level in range(n_levels):
+        plot_metrics_per_level(['train_losses', 'val_losses'],
+                               ['Training Loss', 'Validation Loss'],
+                               'loss_plot', config.num_epochs, level)
+        plot_metrics_per_level(['train_iou', 'val_iou'],
+                               ['Training Mean IoU', 'Validation Mean IoU'],
+                               'iou_plot', config.num_epochs, level)
+
 
 
 
