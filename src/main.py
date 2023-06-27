@@ -1,5 +1,4 @@
 import time
-import math
 import os
 import numpy as np
 import pandas as pd
@@ -9,7 +8,7 @@ import config
 from train import train
 from predict import predict
 from dataloader import get_loader, split_etci_data, split_sn6_data
-from utils import plot_single_prediction, visualize_prediction, get_image_name_from_path
+from utils import visualize_prediction
 
 
 def load_data(dataset, max_data_points=None):
@@ -23,10 +22,16 @@ def load_data(dataset, max_data_points=None):
 
 
 def save_metrics(train_iou, train_losses, val_iou, val_losses):
-    np.save(f'{config.output_dir}/train_losses_{config.dataset}.npy', train_losses)
-    np.save(f'{config.output_dir}/val_losses_{config.dataset}.npy', val_losses)
-    np.save(f'{config.output_dir}/train_iou_{config.dataset}.npy', train_iou)
-    np.save(f'{config.output_dir}/val_iou_{config.dataset}.npy', val_iou)
+    metrics = ["train_losses", "val_losses", "train_iou", "val_iou"]
+    new_values = [train_losses, val_losses, train_iou, val_iou]
+    for metric, new_value in zip(metrics, new_values):
+        metric_file = f'{config.output_dir}/{metric}_{config.dataset}.npy'
+        if os.path.exists(metric_file):
+            old_values = np.load(metric_file)
+            combined_values = np.append(old_values, new_value)
+            np.save(metric_file, combined_values)
+        else:
+            np.save(metric_file, new_value)
     print(f"Done saving evaluation metrics/losses on train/val")
 
 
@@ -35,7 +40,7 @@ def plot_metrics_per_level(metric_names, metric_labels, plot_filename, num_epoch
     epochs = range(1, num_epochs + 1)
 
     for level in range(n_levels + 1):
-        plt.figure(figsize=(10,6))
+        plt.figure(figsize=(10, 6))
         for metric_name, metric_label in zip(metric_names, metric_labels):
             metric_values = np.load(f'{config.output_dir}/{metric_name}_{config.dataset}.npy')
             level_metric_values = metric_values[level * num_epochs : (level + 1) * num_epochs]
@@ -74,9 +79,11 @@ def start_basic_unet(n_levels=1, max_data_points=None):
             = train(config.num_epochs, train_loader, val_loader, train_df, val_df, level=level)
         timing_levels.append(time.time() - start)
         save_metrics(train_iou, train_losses, val_iou, val_losses)
-        plot_metrics_per_level(['train_losses', 'val_losses'], ['Training Loss', 'Validation Loss'],
+        plot_metrics_per_level(['train_losses', 'val_losses'],
+                               ['Training Loss', 'Validation Loss'],
                                'loss_plot', config.num_epochs, level)
-        plot_metrics_per_level(['train_iou', 'val_iou'], ['Training Mean IoU', 'Validation Mean IoU'],
+        plot_metrics_per_level(['train_iou', 'val_iou'],
+                               ['Training Mean IoU', 'Validation Mean IoU'],
                                'iou_plot', config.num_epochs, level)
 
         final_predictions, test_df, mean_iou = predict(test_loader, test_df, level=level)
