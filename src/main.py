@@ -54,17 +54,9 @@ def plot_metrics_per_level(metric_names, metric_labels, plot_filename, num_epoch
         plt.show()
 
 
-def visualize_results(original_df):
-    labels_dir = os.path.join(config.output_dir, f'{config.dataset}_labels')
-    image_ids = []
-    for file_path in glob(f'{labels_dir}/*.png'):
-        filename = os.path.basename(file_path)
-        parts = filename.split('_')
-        # five elements to be removed from name 'semantic_map_level_0_image_'
-        image_id = '_'.join(parts[5:]).split('.')[0]
-        image_ids.append(image_id)
-    for index in config.SAMPLE_INDICES:
-        visualize_prediction(image_ids[index], original_df)
+def visualize_examples(df):
+    for image in config.SAMPLE_IMAGES:
+        visualize_prediction(image, df)
 
 
 def start_basic_unet(n_levels=1, max_data_points=None):
@@ -86,7 +78,7 @@ def start_basic_unet(n_levels=1, max_data_points=None):
                 fix_imports=True,
                 allow_pickle=False)
         updated_df = pd.concat([train_df, val_df, test_df])
-        visualize_results(updated_df)
+        visualize_examples(updated_df)
         print(f"Finished visualizing some predictions for level {level}.")
     np.save(f'{config.output_dir}/mean_iou_levels_{config.dataset}.npy', np.array(test_mean_iou_levels))
     np.save(f'{config.output_dir}/timings_levels_{config.dataset}.npy', np.array(timing_levels))
