@@ -140,7 +140,7 @@ def find_prediction_image(searched_value, df):
 
 
 def visualize_prediction(prediction_image_name, original_df, figure_size=(25, 15)):
-    index = find_prediction_image(f'{prediction_image_name}.png', original_df)
+    index = find_prediction_image(f'{prediction_image_name}_vv.png', original_df)
     if index is not None:
         df_row = original_df.iloc[index]
 
