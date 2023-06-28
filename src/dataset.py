@@ -23,6 +23,12 @@ class ETCIDataset(Dataset):
         semantic_map_path = df_row[f"semantic_map_prev_level"]
         if semantic_map_path:
             semantic_map = cv2.imread(semantic_map_path, 0) / 255.0
+            if vv_image.shape[:2] != semantic_map.shape[:2]:
+                print(f"Warning: Mismatched image dimensions at index {index}. Reshaping semantic map.")
+                semantic_map = cv2.resize(semantic_map, vv_image.shape[::-1])
+            if semantic_map.ndim == 2:
+                print(f"Warning: Missing third dimension at index {index}. Expanding semantic map.")
+                semantic_map = np.expand_dims(semantic_map, axis=-1)
             input_image = np.dstack((vv_image, vh_image, semantic_map))
         else:
             dummy_channel = np.zeros_like(vv_image)
