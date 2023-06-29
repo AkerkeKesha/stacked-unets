@@ -27,7 +27,6 @@ class ETCIDataset(Dataset):
                 print(f"Warning: Mismatched image dimensions at index {index}. Reshaping semantic map.")
                 semantic_map = cv2.resize(semantic_map, vv_image.shape[::-1])
             if semantic_map.ndim == 2:
-                print(f"Warning: Missing third dimension at index {index}. Expanding semantic map.")
                 semantic_map = np.expand_dims(semantic_map, axis=-1)
             input_image = np.dstack((vv_image, vh_image, semantic_map))
         else:
