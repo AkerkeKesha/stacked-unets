@@ -24,7 +24,6 @@ class ETCIDataset(Dataset):
         if semantic_map_path:
             semantic_map = cv2.imread(semantic_map_path, 0) / 255.0
             if vv_image.shape[:2] != semantic_map.shape[:2]:
-                print(f"Warning: Mismatched image dimensions at index {index}. Reshaping semantic map.")
                 semantic_map = cv2.resize(semantic_map, vv_image.shape[::-1])
             if semantic_map.ndim == 2:
                 semantic_map = np.expand_dims(semantic_map, axis=-1)
