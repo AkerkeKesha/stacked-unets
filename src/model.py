@@ -17,6 +17,22 @@ class UNet(nn.Module):
         return self.model(x)
 
 
+class StackedUNet(nn.Module):
+    def __init__(self, n_levels):
+        super().__init__()
+        self.n_levels = n_levels
+        self.models = nn.ModuleList([smp.Unet(encoder_name="resnet18",
+                                              encoder_weights=None,
+                                              in_channels=3,
+                                              classes=2,) for _ in range(n_levels)])
+
+    def forward(self, x):
+        out = x
+        for i in range(self.n_levels):
+            out = self.models[i](out)
+        return out
+
+
 
 
 
