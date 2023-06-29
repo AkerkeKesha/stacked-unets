@@ -130,17 +130,17 @@ def visualize_image_and_masks(df_row, figure_size=(25, 15)):
 
 
 def find_prediction_image(searched_value, df):
-    mask = df['vv_image_path'].str.endswith(searched_value)
+    mask = df["semantic_map_prev_level"].str.endswith(searched_value)
     indices = df.loc[mask].index
     if len(indices) > 0:
         return indices[0]
     else:
-        print(f"No match found for {searched_value} in vv_image_path column")
+        print(f"No match found for {searched_value} in semantic_map_prev_level column")
         return None
 
 
 def visualize_prediction(prediction_image_name, original_df, figure_size=(25, 15)):
-    index = find_prediction_image(f'{prediction_image_name}_vv.png', original_df)
+    index = find_prediction_image(f'{prediction_image_name}.png', original_df)
     if index is not None:
         df_row = original_df.iloc[index]
 
@@ -148,18 +148,13 @@ def visualize_prediction(prediction_image_name, original_df, figure_size=(25, 15
         vh_image = cv2.imread(df_row['vh_image_path'], 0) / 255.0
         rgb_input = grayscale_to_rgb(vv_image, vh_image)
 
-        water_body_label_path = df_row['water_body_label_path']
-        water_body_label_image = cv2.imread(water_body_label_path, 0) / 255.0
-
-        flood_label_path = df_row['flood_label_path']
-        flood_label_image = cv2.imread(flood_label_path, 0) / 255.0
-
-        image_id = os.path.basename(df_row['vv_image_path']).split('.')[0]
+        water_body_label_image = cv2.imread(df_row['water_body_label_path'], 0) / 255.0
+        flood_label_image = cv2.imread(df_row['flood_label_path'], 0) / 255.0
 
         prediction_path = df_row["semantic_map_prev_level"]
         if not os.path.exists(prediction_path):
             raise FileNotFoundError(f"File does not exist: {prediction_path}")
-        if prediction_path is None or len(prediction_path) == 0:
+        if len(prediction_path) == 0:
             raise FileNotFoundError(f"Unable to read the image file: {prediction_image_name}")
 
         prediction = cv2.imread(prediction_path, 0) / 255.0
@@ -170,7 +165,7 @@ def visualize_prediction(prediction_image_name, original_df, figure_size=(25, 15
 
         plt.subplot(1, 4, 1)
         plt.imshow(rgb_input)
-        plt.title(f'{image_id}')
+        plt.title(f'VV and VH image:{prediction_image_name}')
 
         plt.subplot(1, 4, 2)
         plt.imshow(water_body_label_image)
@@ -191,7 +186,7 @@ def visualize_prediction(prediction_image_name, original_df, figure_size=(25, 15
 def get_image_name_from_path(image_path: str):
     """
     Extracts the image name from the file path.
-    Example: 'path/to/some_parts_of_image_vv.png' -> 'image'
+    Example: 'path/to/some_parts_of_image_vv.png' -> 'some_parts_of_image'
     """
     base_name = os.path.basename(image_path)
     # Split the base_name by '_', keep all but the last element, and join them back
