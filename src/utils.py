@@ -165,7 +165,7 @@ def visualize_prediction(prediction_image_name, original_df, figure_size=(25, 15
 
         plt.subplot(1, 4, 1)
         plt.imshow(rgb_input)
-        plt.title(f'VV and VH image:{prediction_image_name}')
+        plt.title(f"VV and VH image:{get_image_name_from_path(df_row['vv_image_path'])}")
 
         plt.subplot(1, 4, 2)
         plt.imshow(water_body_label_image)
@@ -177,7 +177,7 @@ def visualize_prediction(prediction_image_name, original_df, figure_size=(25, 15
 
         plt.subplot(1, 4, 4)
         plt.imshow(prediction)
-        plt.title(f'Prediction {prediction_image_name}')
+        plt.title(f'Prediction {os.path.basename(prediction_path)}')
         plt.show()
     else:
         print(f"Skipping visualization for {prediction_image_name} due to missing data")
@@ -255,6 +255,8 @@ def get_sn6_test_image_ids(test_dir):
     image_ids = [os.path.basename(file_path).replace('SN6_Test_Public_AOI_11_Rotterdam_SAR-Intensity_', '')
                  .replace('.tif', '') for file_path in file_paths]
     return image_ids
+
+
 
 
 
