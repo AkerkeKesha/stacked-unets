@@ -2,7 +2,6 @@ import time
 import os
 import numpy as np
 import pandas as pd
-from glob import glob
 import matplotlib.pyplot as plt
 import config
 from train import train
@@ -79,7 +78,6 @@ def start_basic_unet(n_levels=1, max_data_points=None):
                 allow_pickle=False)
         updated_df = pd.concat([train_df, val_df, test_df])
         visualize_examples(updated_df)
-        print(f"Finished visualizing some predictions for level {level}.")
     np.save(f'{config.output_dir}/mean_iou_levels_{config.dataset}.npy', np.array(test_mean_iou_levels))
     np.save(f'{config.output_dir}/timings_levels_{config.dataset}.npy', np.array(timing_levels))
     print(f"All levels finished")
@@ -93,6 +91,29 @@ def show_results(n_levels=1):
         plot_metrics_per_level(['train_iou', 'val_iou'],
                                ['Training Mean IoU', 'Validation Mean IoU'],
                                'iou_plot', config.num_epochs, level)
+    mean_iou_levels = np.load(f'{config.output_dir}/mean_iou_levels_{config.dataset}.npy')
+    timing_levels = np.load(f'{config.output_dir}/timings_levels_{config.dataset}.npy')
+
+    # Plotting mean IoUs
+    plt.figure(figsize=(10, 6))
+    levels = range(n_levels)
+    plt.plot(levels, mean_iou_levels, marker='o')
+    plt.xlabel("Level")
+    plt.ylabel("Mean IoU")
+    plt.title("Mean IoU per Level")
+    plt.xticks(levels)
+    plt.savefig(f'{config.output_dir}/mean_iou_plot_{config.dataset}.png', bbox_inches='tight')
+    plt.show()
+
+    # Plotting timing levels
+    plt.figure(figsize=(10, 6))
+    plt.plot(levels, timing_levels, marker='o')
+    plt.xlabel("Level")
+    plt.ylabel("Time (seconds)")
+    plt.title("Timing per Level")
+    plt.xticks(levels)
+    plt.savefig(f'{config.output_dir}/timing_plot_{config.dataset}.png', bbox_inches='tight')
+    plt.show()
 
 
 
