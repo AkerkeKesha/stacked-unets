@@ -1,7 +1,6 @@
 import os
 
 environment = "colab"
-# environment = "local"
 if environment == "local":
     project_root = os.path.dirname(os.path.abspath(__file__))
 elif environment == "colab":
@@ -29,7 +28,6 @@ batch_size = 2 if environment == "local" else 48
 learning_rate = 1e-3
 num_epochs = 2 if environment == "local" else 20
 
-
 if dataset == "etci":
     SAMPLE_IMAGES = [
         "bangladesh_20170606t115613_x-33_y-29",
@@ -38,7 +36,7 @@ if dataset == "etci":
         "nebraska_20171210t002119_x-13_y-28",
         "nebraska_20170731t002118_x-9_y-26",
         "nebraska_20170731t002118_x-10_y-14",
-        "northal_20191227t234659_x-9_y-9",
+        "northal_20191227t234659_x-9_y-9",    # this prediction looks bad
         "northal_20190407t234651_x-19_y-18",
         "northal_20190712t234656_x-5_y-25",
     ]
