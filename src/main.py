@@ -80,7 +80,8 @@ def start_basic_unet(n_levels=1, max_data_points=None):
         visualize_examples(updated_df)
     np.save(f'{config.output_dir}/mean_iou_levels_{config.dataset}.npy', np.array(test_mean_iou_levels))
     np.save(f'{config.output_dir}/timings_levels_{config.dataset}.npy', np.array(timing_levels))
-    print(f"All levels finished")
+
+    show_results(n_levels=n_levels)
 
 
 def show_results(n_levels=1):
@@ -114,6 +115,7 @@ def show_results(n_levels=1):
     plt.xticks(levels)
     plt.savefig(f'{config.output_dir}/timing_plot_{config.dataset}.png', bbox_inches='tight')
     plt.show()
+    print("Done plotting results")
 
 
 
