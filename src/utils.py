@@ -77,20 +77,6 @@ def cleanup_etci_data(df):
     return filtered_df
 
 
-def plot_single_prediction(image_name, semantic_map_path, output_dir, figure_size=(6, 6)):
-    if not os.path.exists(semantic_map_path):
-        raise FileNotFoundError(f"File does not exist: {semantic_map_path}")
-    semantic_map = cv2.imread(semantic_map_path, 0)
-    if semantic_map is None or semantic_map.size == 0:
-        raise FileNotFoundError(f"No file found or unable to read the file at: {semantic_map_path}")
-    plt.figure(figsize=figure_size)
-    plt.imshow(semantic_map)
-    plt.axis('off')
-    # output_path = os.path.join(output_dir, f"prediction_{image_name}.png")
-    # plt.savefig(output_path, bbox_inches='tight')
-    plt.close()
-
-
 def visualize_image_and_masks(df_row, figure_size=(25, 15)):
     vv_image_path = df_row['vv_image_path']
     vh_image_path = df_row['vh_image_path']
@@ -140,7 +126,7 @@ def find_prediction_image(searched_value, df):
 
 
 def visualize_prediction(prediction_image_name, updated_df, n_levels=1):
-    fig, axes = plt.subplots(nrows=n_levels+1, ncols=4, figsize=(12, 3*(n_levels+1)))
+    fig, axes = plt.subplots(nrows=n_levels+3, ncols=2, figsize=(12, 3*(n_levels+3)))
     index = find_prediction_image(f'{prediction_image_name}.png', updated_df)
     if index is not None:
         df_row = updated_df.iloc[index]
@@ -156,14 +142,14 @@ def visualize_prediction(prediction_image_name, updated_df, n_levels=1):
         water_body_label_image = cv2.imread(flood_label_path, 0) / 255.0
         flood_label_image = cv2.imread(water_body_label_path, 0) / 255.0
 
-        axes[0][0].imshow(rgb_input)
-        axes[0][0].set_title(f"Image{get_image_name_from_path(df_row['vv_image_path'])}")
+        axes[0, 0].imshow(rgb_input)
+        axes[0, 0].set_title(f"RGB {get_image_name_from_path(df_row['vv_image_path'])}")
 
-        axes[0][1].imshow(water_body_label_image)
-        axes[0][1].set_title('Water Mask')
+        axes[0, 1].imshow(water_body_label_image)
+        axes[0, 1].set_title('Water Mask')
 
-        axes[0][2].imshow(flood_label_image)
-        axes[0][2].set_title('Flood Mask')
+        axes[1, 0].imshow(flood_label_image)
+        axes[1, 0].set_title('Flood Mask')
 
         for level in range(n_levels):
             prediction_path = f"{config.output_dir}/{config.dataset}_labels/semantic_map_level_{level}_image_{prediction_image_name}.png"
@@ -176,8 +162,8 @@ def visualize_prediction(prediction_image_name, updated_df, n_levels=1):
             if prediction is None:
                 raise FileNotFoundError(f"Unable to load the image: {prediction_image_name}")
 
-            axes[level][3].imshow(prediction)
-            axes[level][3].set_title(f"Level {level} prediction of {prediction_image_name}")
+            axes[level][0].imshow(prediction)
+            axes[level][0].set_title(f"Level{level} {get_image_name_from_semantic_path(df_row['semantic_map_prev_level'])}")
         plt.tight_layout()
         plt.show()
     else:
@@ -193,6 +179,18 @@ def get_image_name_from_path(image_path: str):
     # Split the base_name by '_', keep all but the last element, and join them back
     image_name_parts = base_name.split('_')[:-1]
     image_name = '_'.join(image_name_parts)
+    return image_name
+
+
+def get_image_name_from_semantic_path(image_path: str):
+    """
+    Extracts the image name from the file path.
+    Example: 'path/to/semantic_map_level_1_image_name.png' -> 'name'
+    """
+    base_name = os.path.basename(image_path)
+    image_name_parts = base_name.split('_')[5:]
+    image_name = '_'.join(image_name_parts)
+    image_name = image_name.split('.')[0]
     return image_name
 
 
