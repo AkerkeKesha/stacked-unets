@@ -34,16 +34,15 @@ def save_metrics(train_iou, train_losses, val_iou, val_losses):
     print(f"Done saving evaluation metrics/losses on train/val")
 
 
-def plot_metrics_per_level(metric_names, metric_labels, plot_filename, num_epochs, n_levels=1):
+def plot_metrics_per_level(metric_names, metric_labels, plot_filename, num_epochs, level):
     assert len(metric_names) == len(metric_labels), "Mismatch in number of metrics and labels."
     epochs = range(1, num_epochs + 1)
 
-    for level in range(n_levels):
-        plt.figure(figsize=(10, 6))
-        for metric_name, metric_label in zip(metric_names, metric_labels):
-            metric_values = np.load(f'{config.output_dir}/{metric_name}_{config.dataset}.npy')
-            level_metric_values = metric_values[level * num_epochs : (level + 1) * num_epochs]
-            plt.plot(epochs, level_metric_values, label=f"{metric_label}")
+    plt.figure(figsize=(10, 6))
+    for metric_name, metric_label in zip(metric_names, metric_labels):
+        metric_values = np.load(f'{config.output_dir}/{metric_name}_{config.dataset}.npy')
+        level_metric_values = metric_values[level * num_epochs : (level + 1) * num_epochs]
+        plt.plot(epochs, level_metric_values, label=f"{metric_label}")
 
         plt.xlabel("Epoch")
         plt.title(f"Metrics for level {level}")
