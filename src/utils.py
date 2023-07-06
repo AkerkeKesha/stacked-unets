@@ -162,8 +162,13 @@ def visualize_prediction(prediction_image_name, updated_df, n_levels=1):
             if prediction is None:
                 raise FileNotFoundError(f"Unable to load the image: {prediction_image_name}")
 
-            axes[level][0].imshow(prediction)
-            axes[level][0].set_title(f"Level{level} {get_image_name_from_semantic_path(df_row['semantic_map_prev_level'])}")
+            axes[level+2, 0].imshow(prediction)
+            axes[level+2, 0].set_title(f"Level{level} {get_image_name_from_semantic_path(df_row['semantic_map_prev_level'])}")
+
+        # Remove empty subplots
+        for level in range(n_levels+2, axes.shape[0]):
+            for col in range(axes.shape[1]):
+                axes[level, col].axis('off')
         plt.tight_layout()
         plt.show()
     else:
