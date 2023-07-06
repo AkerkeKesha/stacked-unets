@@ -139,31 +139,31 @@ def find_prediction_image(searched_value, df):
         return None
 
 
-def visualize_prediction(prediction_image_name, updated_df, n_levels, figure_size=(25, 15)):
+def visualize_prediction(prediction_image_name, updated_df, n_levels=1):
+    fig, axes = plt.subplots(nrows=n_levels+1, ncols=4, figsize=(12, 3*(n_levels+1)))
     index = find_prediction_image(f'{prediction_image_name}.png', updated_df)
     if index is not None:
         df_row = updated_df.iloc[index]
+        vv_image_path = df_row['vv_image_path']
+        vh_image_path = df_row['vh_image_path']
+        flood_label_path = df_row['flood_label_path']
+        water_body_label_path = df_row['water_body_label_path']
 
-        vv_image = cv2.imread(df_row['vv_image_path'], 0) / 255.0
-        vh_image = cv2.imread(df_row['vh_image_path'], 0) / 255.0
+        vv_image = cv2.imread(vv_image_path, 0) / 255.0
+        vh_image = cv2.imread(vh_image_path, 0) / 255.0
         rgb_input = grayscale_to_rgb(vv_image, vh_image)
 
-        water_body_label_image = cv2.imread(df_row['water_body_label_path'], 0) / 255.0
-        flood_label_image = cv2.imread(df_row['flood_label_path'], 0) / 255.0
+        water_body_label_image = cv2.imread(flood_label_path, 0) / 255.0
+        flood_label_image = cv2.imread(water_body_label_path, 0) / 255.0
 
-        plt.figure(figsize=figure_size)
+        axes[0][0].imshow(rgb_input)
+        axes[0][0].set_title(f"Image{get_image_name_from_path(df_row['vv_image_path'])}")
 
-        plt.subplot(4, 2, 1)
-        plt.imshow(rgb_input)
-        plt.title(f"VV and VH image:{get_image_name_from_path(df_row['vv_image_path'])}")
+        axes[0][1].imshow(water_body_label_image)
+        axes[0][1].set_title('Water Mask')
 
-        plt.subplot(4, 2, 2)
-        plt.imshow(water_body_label_image)
-        plt.title('Water body mask')
-
-        plt.subplot(4, 2, 3)
-        plt.imshow(flood_label_image)
-        plt.title('Flood mask')
+        axes[0][2].imshow(flood_label_image)
+        axes[0][2].set_title('Flood Mask')
 
         for level in range(n_levels):
             prediction_path = f"{config.output_dir}/{config.dataset}_labels/semantic_map_level_{level}_image_{prediction_image_name}.png"
@@ -176,9 +176,8 @@ def visualize_prediction(prediction_image_name, updated_df, n_levels, figure_siz
             if prediction is None:
                 raise FileNotFoundError(f"Unable to load the image: {prediction_image_name}")
 
-            plt.subplot(4, 2, level + 4)
-            plt.imshow(prediction)
-            plt.title(f"Level {level} prediction of {prediction_image_name}")
+            axes[level][3].imshow(prediction)
+            axes[level][3].set_title(f"Level {level} prediction of {prediction_image_name}")
         plt.tight_layout()
         plt.show()
     else:
