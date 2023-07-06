@@ -44,12 +44,12 @@ def plot_metrics_per_level(metric_names, metric_labels, plot_filename, num_epoch
         level_metric_values = metric_values[level * num_epochs : (level + 1) * num_epochs]
         plt.plot(epochs, level_metric_values, label=f"{metric_label}")
 
-        plt.xlabel("Epoch")
-        plt.title(f"Metrics for level {level}")
-        plt.legend()
+    plt.xlabel("Epoch")
+    plt.title(f"Metrics for level {level}")
+    plt.legend()
 
-        plt.savefig(f'{config.output_dir}/{plot_filename}_level{level}_{config.dataset}.png', bbox_inches='tight')
-        plt.show()
+    plt.savefig(f'{config.output_dir}/{plot_filename}_level{level}_{config.dataset}.png', bbox_inches='tight')
+    plt.show()
 
 
 def visualize_examples(df, n_levels=1):
@@ -62,6 +62,7 @@ def start_basic_unet(n_levels=1, max_data_points=None):
         = load_data(config.dataset, max_data_points=max_data_points)
     test_mean_iou_levels = []
     timing_levels = []
+    updated_df = original_df
     for level in range(n_levels):
         print(f"Level: [{level + 1} / {n_levels}]")
         start = time.time()
