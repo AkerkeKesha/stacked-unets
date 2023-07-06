@@ -37,5 +37,4 @@ def predict(test_loader, df_test, level=0):
     print(f"Mean IoU for the test dataset: {mean_iou}")
     final_predictions = np.concatenate(final_predictions, axis=0)
     df_test = store_semantic_maps(df_test, level, semantic_maps)
-    print(f"Semantic maps for next level are stored")
     return final_predictions, df_test, mean_iou
