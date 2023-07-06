@@ -53,9 +53,9 @@ def plot_metrics_per_level(metric_names, metric_labels, plot_filename, num_epoch
         plt.show()
 
 
-def visualize_examples(df):
+def visualize_examples(df, n_levels=1):
     for image in config.SAMPLE_IMAGES:
-        visualize_prediction(image, df)
+        visualize_prediction(image, df, n_levels=n_levels)
 
 
 def start_basic_unet(n_levels=1, max_data_points=None):
@@ -77,11 +77,12 @@ def start_basic_unet(n_levels=1, max_data_points=None):
                 fix_imports=True,
                 allow_pickle=False)
         updated_df = pd.concat([train_df, val_df, test_df])
-        visualize_examples(updated_df)
+
     np.save(f'{config.output_dir}/mean_iou_levels_{config.dataset}.npy', np.array(test_mean_iou_levels))
     np.save(f'{config.output_dir}/timings_levels_{config.dataset}.npy', np.array(timing_levels))
 
     show_results(n_levels=n_levels)
+    visualize_examples(updated_df, n_levels=n_levels)
 
 
 def show_results(n_levels=1):
@@ -92,6 +93,7 @@ def show_results(n_levels=1):
         plot_metrics_per_level(['train_iou', 'val_iou'],
                                ['Training Mean IoU', 'Validation Mean IoU'],
                                'iou_plot', config.num_epochs, level)
+
     mean_iou_levels = np.load(f'{config.output_dir}/mean_iou_levels_{config.dataset}.npy')
     timing_levels = np.load(f'{config.output_dir}/timings_levels_{config.dataset}.npy')
 

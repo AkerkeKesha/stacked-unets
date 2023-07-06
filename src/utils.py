@@ -139,10 +139,10 @@ def find_prediction_image(searched_value, df):
         return None
 
 
-def visualize_prediction(prediction_image_name, original_df, figure_size=(25, 15)):
-    index = find_prediction_image(f'{prediction_image_name}.png', original_df)
+def visualize_prediction(prediction_image_name, updated_df, n_levels, figure_size=(25, 15)):
+    index = find_prediction_image(f'{prediction_image_name}.png', updated_df)
     if index is not None:
-        df_row = original_df.iloc[index]
+        df_row = updated_df.iloc[index]
 
         vv_image = cv2.imread(df_row['vv_image_path'], 0) / 255.0
         vh_image = cv2.imread(df_row['vh_image_path'], 0) / 255.0
@@ -151,33 +151,35 @@ def visualize_prediction(prediction_image_name, original_df, figure_size=(25, 15
         water_body_label_image = cv2.imread(df_row['water_body_label_path'], 0) / 255.0
         flood_label_image = cv2.imread(df_row['flood_label_path'], 0) / 255.0
 
-        prediction_path = df_row["semantic_map_prev_level"]
-        if not os.path.exists(prediction_path):
-            raise FileNotFoundError(f"File does not exist: {prediction_path}")
-        if len(prediction_path) == 0:
-            raise FileNotFoundError(f"Unable to read the image file: {prediction_image_name}")
-
-        prediction = cv2.imread(prediction_path, 0) / 255.0
-        if prediction is None:
-            raise FileNotFoundError(f"Unable to load the image: {prediction_image_name}")
-
         plt.figure(figsize=figure_size)
 
-        plt.subplot(1, 4, 1)
+        plt.subplot(4, 2, 1)
         plt.imshow(rgb_input)
         plt.title(f"VV and VH image:{get_image_name_from_path(df_row['vv_image_path'])}")
 
-        plt.subplot(1, 4, 2)
+        plt.subplot(4, 2, 2)
         plt.imshow(water_body_label_image)
         plt.title('Water body mask')
 
-        plt.subplot(1, 4, 3)
+        plt.subplot(4, 2, 3)
         plt.imshow(flood_label_image)
         plt.title('Flood mask')
 
-        plt.subplot(1, 4, 4)
-        plt.imshow(prediction)
-        plt.title(f'Prediction {os.path.basename(prediction_path)}')
+        for level in range(n_levels):
+            prediction_path = f"{config.output_dir}/{config.dataset}_labels/semantic_map_level_{level}_image_{prediction_image_name}.png"
+            if not os.path.exists(prediction_path):
+                raise FileNotFoundError(f"File does not exist: {prediction_path}")
+            if len(prediction_path) == 0:
+                raise FileNotFoundError(f"Unable to read the image file: {prediction_image_name}")
+
+            prediction = cv2.imread(prediction_path, 0) / 255.0
+            if prediction is None:
+                raise FileNotFoundError(f"Unable to load the image: {prediction_image_name}")
+
+            plt.subplot(4, 2, level + 4)
+            plt.imshow(prediction)
+            plt.title(f"Level {level} prediction of {prediction_image_name}")
+        plt.tight_layout()
         plt.show()
     else:
         print(f"Skipping visualization for {prediction_image_name} due to missing data")
