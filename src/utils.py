@@ -126,7 +126,7 @@ def find_prediction_image(searched_value, df):
 
 
 def visualize_prediction(prediction_image_name, updated_df, n_levels=1):
-    fig, axes = plt.subplots(nrows=n_levels+3, ncols=2, figsize=(12, 3*(n_levels+3)))
+    fig, axes = plt.subplots(nrows=n_levels+4, ncols=9, figsize=(12, 3*(n_levels+1)))
     index = find_prediction_image(f'{prediction_image_name}.png', updated_df)
     if index is not None:
         df_row = updated_df.iloc[index]
@@ -145,11 +145,11 @@ def visualize_prediction(prediction_image_name, updated_df, n_levels=1):
         axes[0, 0].imshow(rgb_input)
         axes[0, 0].set_title(f"RGB {get_image_name_from_path(df_row['vv_image_path'])}")
 
-        axes[0, 1].imshow(water_body_label_image)
-        axes[0, 1].set_title('Water Mask')
+        axes[1, 0].imshow(water_body_label_image)
+        axes[1, 0].set_title('Water Mask')
 
-        axes[1, 0].imshow(flood_label_image)
-        axes[1, 0].set_title('Flood Mask')
+        axes[2, 0].imshow(flood_label_image)
+        axes[2, 0].set_title('Flood Mask')
 
         for level in range(n_levels):
             prediction_path = f"{config.output_dir}/{config.dataset}_labels/semantic_map_level_{level}_image_{prediction_image_name}.png"
@@ -162,8 +162,8 @@ def visualize_prediction(prediction_image_name, updated_df, n_levels=1):
             if prediction is None:
                 raise FileNotFoundError(f"Unable to load the image: {prediction_image_name}")
 
-            axes[level+2, 0].imshow(prediction)
-            axes[level+2, 0].set_title(f"Level{level} {get_image_name_from_semantic_path(df_row['semantic_map_prev_level'])}")
+            axes[level+3, 0].imshow(prediction)
+            axes[level+3, 0].set_title(f"Level{level} {get_image_name_from_semantic_path(df_row['semantic_map_prev_level'])}")
 
         # Remove empty subplots
         for level in range(n_levels+2, axes.shape[0]):
