@@ -39,6 +39,7 @@ if dataset == "etci":
         "northal_20191227t234659_x-9_y-9",    # this prediction looks bad
         "northal_20190407t234651_x-19_y-18",
         "northal_20190712t234656_x-5_y-25",
+        "bangladesh_20170606t115613_x-23_y-15",
     ]
 else:
     SAMPLE_INDICES = []
