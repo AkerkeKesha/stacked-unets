@@ -8,8 +8,6 @@ import cv2
 import config
 import matplotlib.pyplot as plt
 
-IMAGE_NAME = prediction_image_name
-
 
 # logging.basicConfig(filename="single_Unet_training.log",
 #                              filemode="w",
