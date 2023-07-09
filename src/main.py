@@ -53,8 +53,7 @@ def plot_metrics_per_level(metric_names, metric_labels, plot_filename, num_epoch
 
 
 def visualize_examples(df, n_levels=1):
-    for image in config.SAMPLE_IMAGES:
-        visualize_prediction(image, df, n_levels=n_levels)
+    visualize_prediction(images_list=config.SAMPLE_IMAGES, updated_df=df, n_levels=n_levels)
 
 
 def start_basic_unet(n_levels=1, max_data_points=None):
