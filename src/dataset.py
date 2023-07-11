@@ -25,6 +25,8 @@ class ETCIDataset(Dataset):
             semantic_map = cv2.imread(semantic_map_path, 0) / 255.0
             if semantic_map.ndim == 2:
                 semantic_map = np.expand_dims(semantic_map, axis=-1)
+            if semantic_map.shape[:2] != vv_image.shape[:2]:
+                semantic_map = cv2.resize(semantic_map, vv_image.shape[::-1])
             input_image = np.dstack((vv_image, vh_image, semantic_map))
         else:
             dummy_channel = np.zeros_like(vv_image)
