@@ -84,7 +84,6 @@ def visualize_image_and_masks(df_row, figure_size=(25, 15)):
     flood_label_path = df_row['flood_label_path']
     water_body_label_path = df_row['water_body_label_path']
 
-    rgb_filename = os.path.basename(vv_image_path)
     vv_image = cv2.imread(vv_image_path, 0) / 255.0
     vh_image = cv2.imread(vh_image_path, 0) / 255.0
     rgb_image = grayscale_to_rgb(vv_image, vh_image)
@@ -92,6 +91,7 @@ def visualize_image_and_masks(df_row, figure_size=(25, 15)):
     water_body_label_image = cv2.imread(water_body_label_path, 0) / 255.0
     plt.figure(figsize=figure_size)
 
+    rgb_filename = os.path.basename(vv_image_path)
     if df_row.isnull().sum() > 0:
         plt.subplot(1, 2, 1)
         plt.imshow(rgb_image)
@@ -209,8 +209,17 @@ def store_semantic_maps(df: pd.DataFrame, level: int, semantic_maps: List):
     for i, (_, df_row) in enumerate(df.iterrows()):
         image_path = df_row["vv_image_path"]
         image_name = get_image_name_from_path(image_path)
+
+        vv_image = cv2.imread(image_path, 0)
+        target_dimensions = vv_image.shape[:2][::-1]  # flip the dimensions to (width, height)
         semantic_map = semantic_maps[i][0]  # access the first (and only) element in each item
-        semantic_map_path = f"{config.output_dir}/{config.dataset}_labels/semantic_map_level_{level}_image_{image_name}.png"
+
+        if semantic_map.ndim == 2:
+            semantic_map = np.expand_dims(semantic_map, axis=-1)
+        if semantic_map.shape[:2] != target_dimensions:
+            semantic_map = cv2.resize(semantic_map, target_dimensions)
+
+        semantic_map_path = f"{config.labels_dir}/semantic_map_level_{level}_image_{image_name}.png"
         cv2.imwrite(semantic_map_path, semantic_map * 255)
         df.at[_, f"semantic_map_prev_level"] = semantic_map_path
     return df
