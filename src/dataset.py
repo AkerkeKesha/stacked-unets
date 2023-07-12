@@ -22,6 +22,7 @@ class ETCIDataset(Dataset):
 
         semantic_map_path = df_row[f"semantic_map_prev_level"]
         if semantic_map_path:
+            semantic_map = cv2.imread(semantic_map_path, 0) / 255.0
             input_image = np.dstack((vv_image, vh_image, semantic_map))
         else:
             dummy_channel = np.zeros_like(vv_image)
