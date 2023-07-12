@@ -1,3 +1,4 @@
+import cv2
 import torch.optim
 import torch.nn as nn
 import config
@@ -86,6 +87,9 @@ def train(num_epochs, train_loader, val_loader, df_train, df_val, level=0):
                 for img in image:
                     img = img.unsqueeze(0)  # add batch dimension because model expects it
                     semantic_map = model(img).argmax(dim=1).cpu().numpy()
+                    target_dimensions = (img.shape[3], img.shape[2])  # (width, height)
+                    semantic_map = cv2.resize(semantic_map[0], target_dimensions)
+                    semantic_map = semantic_map.astype("uint8")
                     semantic_maps.append(semantic_map)
 
             if split == "train":
