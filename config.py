@@ -9,8 +9,15 @@ else:
     project_root = "/kaggle"
 
 output_dir = os.path.join(project_root, 'output')
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+
 dataset = "etci"
 # dataset = "sn6"
+labels_dir = f"{output_dir}/{dataset}_labels"
+if not os.path.exists(labels_dir):
+    os.makedirs(labels_dir)
+
 if dataset == "etci":
     dataset_name = "data-etci-flood"
     train_dir = os.path.join(project_root, "dataset", dataset_name, "train")
