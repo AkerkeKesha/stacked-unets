@@ -213,11 +213,18 @@ def store_semantic_maps(df: pd.DataFrame, level: int, semantic_maps: List):
         vv_image = cv2.imread(image_path, 0)
         target_dimensions = vv_image.shape[:2][::-1]  # flip the dimensions to (width, height)
         semantic_map = semantic_maps[i][0]  # access the first (and only) element in each item
+        # If the semantic map has only 2 dimensions, use it later to add the extra dimension back.
+        needs_extra_dimension = semantic_map.ndim == 2
 
-        if semantic_map.ndim == 2:
-            semantic_map = np.expand_dims(semantic_map, axis=-1)
-        if semantic_map.shape[:2] != target_dimensions:
+        if needs_extra_dimension:
+            semantic_map = np.squeeze(semantic_map)  # Temporarily remove the extra dimension
+
+        # check and adjust the dimensions of the semantic_map to match the target_dimensions
+        if semantic_map.shape != target_dimensions:
             semantic_map = cv2.resize(semantic_map, target_dimensions)
+
+        if needs_extra_dimension:
+            semantic_map = np.expand_dims(semantic_map, axis=-1)  # Re-add the extra dimension after resizing
 
         semantic_map_path = f"{config.labels_dir}/semantic_map_level_{level}_image_{image_name}.png"
         cv2.imwrite(semantic_map_path, semantic_map * 255)
