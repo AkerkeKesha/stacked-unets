@@ -61,7 +61,6 @@ def start_basic_unet(n_levels=1, max_data_points=None):
         = load_data(config.dataset, max_data_points=max_data_points)
     test_mean_iou_levels = []
     timing_levels = []
-    updated_df = original_df
     for level in range(n_levels):
         print(f"Level: [{level + 1} / {n_levels}]")
         start = time.time()
@@ -75,13 +74,13 @@ def start_basic_unet(n_levels=1, max_data_points=None):
                 final_predictions,
                 fix_imports=True,
                 allow_pickle=False)
-        updated_df = pd.concat([train_df, val_df, test_df])
+        original_df = pd.concat([train_df, val_df, test_df])
 
     np.save(f'{config.output_dir}/mean_iou_levels_{config.dataset}.npy', np.array(test_mean_iou_levels))
     np.save(f'{config.output_dir}/timings_levels_{config.dataset}.npy', np.array(timing_levels))
 
     show_results(n_levels=n_levels)
-    visualize_examples(updated_df, n_levels=n_levels)
+    visualize_examples(original_df, n_levels=n_levels)
 
 
 def show_results(n_levels=1):
