@@ -127,8 +127,15 @@ def find_prediction_image(searched_value, df):
 
 
 def visualize_prediction(images_list, updated_df, n_levels=1):
-    fig, axes = plt.subplots(nrows=n_levels+4, ncols=len(images_list), figsize=(12, 3*(n_levels+1)))
+    fig, axes = plt.subplots(nrows=n_levels+3, ncols=len(images_list), figsize=(12, 2*(n_levels+1)))
+    plt.subplots_adjust(hspace=0.3, wspace=0.3)
+
+    titles = ['RGB input', 'Water mask', 'Flood mask'] + [f'Level {level}' for level in range(n_levels)]
+    for row, title in enumerate(titles):
+        axes[row, 0].set_ylabel(title, rotation='vertical')
+
     for image_index, prediction_image_name in enumerate(images_list):
+        axes[0, image_index].set_title(f"Image {image_index + 1}", fontsize=10)
         index = find_prediction_image(f'{prediction_image_name}.png', updated_df)
         if index is not None:
             df_row = updated_df.iloc[index]
@@ -145,13 +152,8 @@ def visualize_prediction(images_list, updated_df, n_levels=1):
             flood_label_image = cv2.imread(water_body_label_path, 0) / 255.0
 
             axes[0, image_index].imshow(rgb_input)
-            axes[0, image_index].set_title(f"RGB {get_image_name_from_path(df_row['vv_image_path'])}")
-
             axes[1, image_index].imshow(water_body_label_image)
-            axes[1, image_index].set_title('Water Mask')
-
             axes[2, image_index].imshow(flood_label_image)
-            axes[2, image_index].set_title('Flood Mask')
 
             for level in range(n_levels):
                 prediction_path = f"{config.output_dir}/{config.dataset}_labels/semantic_map_level_{level}_image_{prediction_image_name}.png"
@@ -163,18 +165,12 @@ def visualize_prediction(images_list, updated_df, n_levels=1):
                 prediction = cv2.imread(prediction_path, 0) / 255.0
                 if prediction is None:
                     raise FileNotFoundError(f"Unable to load the image: {prediction_image_name}")
-
                 axes[level+3, image_index].imshow(prediction)
-                axes[level+3, image_index].set_title(f"Level{level} {get_image_name_from_semantic_path(df_row['semantic_map_prev_level'])}")
-
-            # Remove empty subplots
-            for level in range(n_levels+2, axes.shape[0]):
-                for col in range(axes.shape[1]):
-                    axes[level, col].axis('off')
         else:
             print(f"Skipping visualization for {prediction_image_name} due to missing data")
 
     plt.tight_layout()
+    plt.savefig(f'{config.output_dir}/{config.dataset}_examples.png', bbox_inches='tight')
     plt.show()
 
 
@@ -192,7 +188,7 @@ def get_image_name_from_path(image_path: str):
 
 def get_image_name_from_semantic_path(image_path: str):
     """
-    Extracts the image name from the file path.
+    Extracts the image name from the file path.wq
     Example: 'path/to/semantic_map_level_1_image_name.png' -> 'name'
     """
     base_name = os.path.basename(image_path)
