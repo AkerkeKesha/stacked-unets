@@ -35,7 +35,7 @@ batch_size = 2 if environment == "local" else 48
 learning_rate = 1e-3
 num_epochs = 2 if environment == "local" else 20
 patience = 10
-early_stop_threshold = 0.01
+early_stop_threshold = 0.02
 
 
 if dataset == "etci":
