@@ -58,16 +58,25 @@ class SN6Dataset(Dataset):
         max_value = channels.max()
         channels /= max_value
         sar_image = np.transpose(channels, (1, 2, 0))
+
+        semantic_map_path = df_row["semantic_map_prev_level"]
+        if semantic_map_path:
+            semantic_map = cv2.imread(semantic_map_path, 0)
+            input_image = np.dstack((sar_image, semantic_map))
+        else:
+            dummy_channel = np.zeros_like(sar_image[:, :, 0])
+            input_image = np.dstack((sar_image, dummy_channel))
+
         if self.split == "test":
-            example["image"] = np.transpose(sar_image, (2, 0, 1)).astype('float32')
+            example["image"] = np.transpose(input_image, (2, 0, 1)).astype('float32')
         else:
             mask = cv2.imread(mask_path, 0)
             if self.transforms:
-                transformed = self.transforms(image=sar_image, mask=mask)
-                sar_image = transformed["image"]
+                transformed = self.transforms(image=input_image, mask=mask)
+                input_image = transformed["image"]
                 mask = transformed["mask"]
 
-            example["image"] = np.transpose(sar_image, (2, 0, 1)).astype('float32')
+            example["image"] = np.transpose(input_image, (2, 0, 1)).astype('float32')
             example["mask"] = mask.astype('int64')
         return example
 
