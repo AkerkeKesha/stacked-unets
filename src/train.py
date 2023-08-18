@@ -10,7 +10,7 @@ from evaluate import IntersectionOverUnion
 
 def train(num_epochs, train_loader, val_loader, df_train, df_val, level=0):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = UNet()
+    model = UNet(in_channels=5)if config.dataset == "sn6" else UNet()
     model.to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
