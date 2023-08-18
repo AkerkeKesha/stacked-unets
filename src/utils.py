@@ -216,6 +216,7 @@ def store_semantic_maps(df: pd.DataFrame, level: int, semantic_maps: List):
 
 def get_sn6_df(split, mode="SAR-Intensity"):
     image_ids, image_paths, mask_paths = [], [], []
+    semantic_map_paths = []
     if split == "train":
         summary_df = pd.read_csv(config.sn6_summary_datapath)
         image_ids = summary_df.ImageId.unique()
@@ -224,6 +225,7 @@ def get_sn6_df(split, mode="SAR-Intensity"):
             image_paths.append(image_path)
             mask_path = f'{config.mask_train_dir}/SN6_Train_AOI_11_Rotterdam_{mode}_{image_id}.png'
             mask_paths.append(mask_path)
+            semantic_map_paths.append("")
     elif split == "test":
         image_ids = get_sn6_test_image_ids(test_dir=config.test_dir)
         for image_id in image_ids:
@@ -234,6 +236,7 @@ def get_sn6_df(split, mode="SAR-Intensity"):
         "image_id": image_ids,
         "image_path": image_paths,
         "mask_path": mask_paths,
+        "semantic_map_prev_level": semantic_map_paths,
     }
     return pd.DataFrame(paths)
 
