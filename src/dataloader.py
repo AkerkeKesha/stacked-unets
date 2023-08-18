@@ -53,8 +53,11 @@ def split_sn6_data(test_size=0.1, val_size=0.1, max_data_points=None):
     image_ids = summary_df.ImageId.unique()
     not_processed = get_sn6_not_processed(mask_train_dir=config.mask_train_dir, image_ids=image_ids)
     original_df = cleanup_sn6_data(original_df, not_processed)
+    original_df = original_df.reset_index(drop=True)
+    if max_data_points:
+        original_df = original_df[:max_data_points]
 
-    train_df, temp_df = train_test_split(original_df, test_size=test_size + val_size, random_state=42)
+    train_df, temp_df = train_test_split(original_df, test_size=(test_size + val_size), random_state=42)
     val_df, test_df = train_test_split(temp_df, test_size=test_size / (test_size + val_size), random_state=42)
     print(f"Split into train:{train_df.shape}, validation:{val_df.shape}, and test:{test_df.shape}")
     return original_df, train_df, val_df, test_df
