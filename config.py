@@ -1,6 +1,6 @@
 import os
 
-environment = "colab"
+environment = os.getenv("ENVIRONMENT", "local")
 if environment == "local":
     project_root = os.path.dirname(os.path.abspath(__file__))
 elif environment == "colab":
@@ -8,12 +8,11 @@ elif environment == "colab":
 else:
     project_root = "/kaggle"
 
-output_dir = os.path.join(project_root, 'output')
+output_dir = os.path.join(project_root, "output")
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
-dataset = "etci"
-# dataset = "sn6"
+dataset = os.getenv("DATASET", "etci")
 labels_dir = f"{output_dir}/{dataset}_labels"
 if not os.path.exists(labels_dir):
     os.makedirs(labels_dir)
