@@ -21,7 +21,6 @@ def train(num_epochs, train_loader, val_loader, df_train, df_val, level=0):
 
     best_val_loss = float('inf')
     epochs_without_improvement = 0
-    last_epoch = 0
 
     for epoch in range(num_epochs):
         last_epoch = epoch
@@ -78,15 +77,16 @@ def train(num_epochs, train_loader, val_loader, df_train, df_val, level=0):
                     print(f"Val mean IoU = {mean_iou:.4f}")
                     print(f"Val mean loss = {val_loss:.4f}")
 
-                # Early stopping logic:
-                if best_val_loss - val_loss > config.early_stop_threshold:
-                    best_val_loss = val_loss
-                    epochs_without_improvement = 0
-                else:
-                    epochs_without_improvement += 1
-                    if epochs_without_improvement >= config.patience:
-                        print(f"Early stopping triggered {last_epoch + 1}")
-                        break
+                # Early stopping logic only at level 0
+                if level == 0:
+                    if best_val_loss - val_loss > config.early_stop_threshold:
+                        best_val_loss = val_loss
+                        epochs_without_improvement = 0
+                    else:
+                        epochs_without_improvement += 1
+                        if epochs_without_improvement >= config.patience:
+                            print(f"Early stopping triggered {last_epoch + 1}")
+                            break
 
         except Exception as ve:
             print(f"An exception occurred during validation: {ve}")
