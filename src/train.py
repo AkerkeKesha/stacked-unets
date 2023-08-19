@@ -10,7 +10,7 @@ from evaluate import IntersectionOverUnion
 
 def train(num_epochs, train_loader, val_loader, df_train, df_val, level=0):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = UNet(in_channels=5)if config.dataset == "sn6" else UNet()
+    model = UNet(in_channels=5) if config.dataset == "sn6" else UNet()
     model.to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
@@ -19,11 +19,7 @@ def train(num_epochs, train_loader, val_loader, df_train, df_val, level=0):
     train_losses, val_losses = [], []
     train_ious, val_ious = [], []
 
-    best_val_loss = float('inf')
-    epochs_without_improvement = 0
-
     for epoch in range(num_epochs):
-        last_epoch = epoch
         model.train()
         training_loss = 0
         iou_metric = IntersectionOverUnion(num_classes=2)
@@ -77,16 +73,8 @@ def train(num_epochs, train_loader, val_loader, df_train, df_val, level=0):
                     print(f"Val mean IoU = {mean_iou:.4f}")
                     print(f"Val mean loss = {val_loss:.4f}")
 
-                # Early stopping logic only at level 0
-                if level == 0:
-                    if best_val_loss - val_loss > config.early_stop_threshold:
-                        best_val_loss = val_loss
-                        epochs_without_improvement = 0
-                    else:
-                        epochs_without_improvement += 1
-                        if epochs_without_improvement >= config.patience:
-                            print(f"Early stopping triggered {last_epoch + 1}")
-                            break
+                # Stop early only at level 0
+                num_epochs = 5 if level == 0 else config.num_epochs
 
         except Exception as ve:
             print(f"An exception occurred during validation: {ve}")
