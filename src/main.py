@@ -34,14 +34,23 @@ def save_metrics(train_iou, train_losses, val_iou, val_losses):
     print(f"Done saving evaluation metrics/losses on train/val")
 
 
-def plot_metrics_per_level(metric_names, metric_labels, plot_filename, num_epochs, level):
+def plot_metrics_per_level(metric_names, metric_labels, plot_filename, level):
     assert len(metric_names) == len(metric_labels), "Mismatch in number of metrics and labels."
+
+    num_epochs = 5 if level == 0 else config.num_epochs
+
     epochs = range(1, num_epochs + 1)
 
     plt.figure(figsize=(10, 6))
     for metric_name, metric_label in zip(metric_names, metric_labels):
         metric_values = np.load(f'{config.output_dir}/{metric_name}_{config.dataset}.npy')
-        level_metric_values = metric_values[level * num_epochs : (level + 1) * num_epochs]
+        if level == 0:
+            start_idx = 0
+            end_idx = num_epochs
+        else:
+            start_idx = (level * config.num_epochs) - (config.num_epochs - num_epochs)
+            end_idx = start_idx + num_epochs
+        level_metric_values = metric_values[start_idx:end_idx]
         plt.plot(epochs, level_metric_values, label=f"{metric_label}")
 
     plt.xlabel("Epoch")
@@ -87,10 +96,10 @@ def show_results(n_levels=1):
     for level in range(n_levels):
         plot_metrics_per_level(['train_losses', 'val_losses'],
                                ['Training Loss', 'Validation Loss'],
-                               'loss_plot', config.num_epochs, level)
+                               'loss_plot', level)
         plot_metrics_per_level(['train_iou', 'val_iou'],
                                ['Training Mean IoU', 'Validation Mean IoU'],
-                               'iou_plot', config.num_epochs, level)
+                               'iou_plot', level)
 
     mean_iou_levels = np.load(f'{config.output_dir}/mean_iou_levels_{config.dataset}.npy')
     timing_levels = np.load(f'{config.output_dir}/timings_levels_{config.dataset}.npy')
@@ -116,9 +125,6 @@ def show_results(n_levels=1):
     plt.savefig(f'{config.output_dir}/timing_plot_{config.dataset}.png', bbox_inches='tight')
     plt.show()
     print("Done plotting results")
-
-
-
 
 
 
