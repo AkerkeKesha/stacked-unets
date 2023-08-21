@@ -74,7 +74,7 @@ def start_basic_unet(n_levels=1, max_data_points=None):
         print(f"Level: [{level + 1} / {n_levels}]")
         start = time.time()
         train_losses, val_losses, train_iou, val_iou, train_df, val_df \
-            = train(config.num_epochs, train_loader, val_loader, train_df, val_df, level=level)
+            = train(train_loader, val_loader, train_df, val_df, level=level)
         timing_levels.append(time.time() - start)
         save_metrics(train_iou, train_losses, val_iou, val_losses)
         final_predictions, test_df, mean_iou = predict(test_loader, test_df, level=level)
