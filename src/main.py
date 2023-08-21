@@ -50,12 +50,12 @@ def plot_metrics_per_level(metric_names, metric_labels, plot_filename, level):
         else:
             start_idx = (level * config.num_epochs) - (config.num_epochs - num_epochs)
             end_idx = min(start_idx + num_epochs, len(metric_values))
+        level_metric_values = metric_values[start_idx:end_idx]
         print(f"For level {level}: start_idx={start_idx}, "
               f"end_idx={end_idx}, "
               f"len(metric_values)={len(metric_values)},"
               f" len(level_metric_values)={len(level_metric_values)}, "
               f"len(epochs)={len(epochs)}")
-        level_metric_values = metric_values[start_idx:end_idx]
         plt.plot(epochs, level_metric_values, label=f"{metric_label}")
 
     plt.xlabel("Epoch")
