@@ -8,7 +8,7 @@ from utils import store_semantic_maps
 from evaluate import IntersectionOverUnion
 
 
-def train(num_epochs, train_loader, val_loader, df_train, df_val, level=0):
+def train(train_loader, val_loader, df_train, df_val, level=0):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = UNet(in_channels=5) if config.dataset == "sn6" else UNet()
     model.to(device)
@@ -18,6 +18,9 @@ def train(num_epochs, train_loader, val_loader, df_train, df_val, level=0):
 
     train_losses, val_losses = [], []
     train_ious, val_ious = [], []
+
+    # Stop early only at level 0
+    num_epochs = 5 if level == 0 else config.num_epochs
 
     for epoch in range(num_epochs):
         model.train()
@@ -72,9 +75,6 @@ def train(num_epochs, train_loader, val_loader, df_train, df_val, level=0):
                 if (epoch + 1) % 10 == 0:
                     print(f"Val mean IoU = {mean_iou:.4f}")
                     print(f"Val mean loss = {val_loss:.4f}")
-
-                # Stop early only at level 0
-                num_epochs = 5 if level == 0 else config.num_epochs
 
         except Exception as ve:
             print(f"An exception occurred during validation: {ve}")
