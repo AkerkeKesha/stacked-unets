@@ -36,20 +36,18 @@ def save_metrics(train_iou, train_losses, val_iou, val_losses):
 
 def plot_metrics_per_level(metric_names, metric_labels, plot_filename, level):
     assert len(metric_names) == len(metric_labels), "Mismatch in number of metrics and labels."
-
-    num_epochs = 5 if level == 0 else config.num_epochs
-
-    epochs = range(1, num_epochs + 1)
-
     plt.figure(figsize=(10, 6))
     for metric_name, metric_label in zip(metric_names, metric_labels):
         metric_values = np.load(f'{config.output_dir}/{metric_name}_{config.dataset}.npy')
         if level == 0:
             start_idx = 0
-            end_idx = num_epochs
+            end_idx = 5
+            epochs = range(1, 5 + 1)
         else:
-            start_idx = (level * config.num_epochs) - (config.num_epochs - num_epochs)
-            end_idx = min(start_idx + num_epochs, len(metric_values))
+            start_idx = 5 + (level - 1) * 20
+            end_idx = start_idx + 20
+            epochs = range(1, 20 + 1)
+
         level_metric_values = metric_values[start_idx:end_idx]
         plt.plot(epochs, level_metric_values, label=f"{metric_label}")
 
@@ -125,6 +123,11 @@ def show_results(n_levels=1):
     plt.savefig(f'{config.output_dir}/timing_plot_{config.dataset}.png', bbox_inches='tight')
     plt.show()
     print("Done plotting results")
+
+
+if __name__ == '__main__':
+    show_results(n_levels=5)
+
 
 
 
