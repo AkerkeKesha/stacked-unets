@@ -63,7 +63,7 @@ def visualize_examples(df, n_levels=1):
     visualize_prediction(images_list=config.SAMPLE_IMAGES, updated_df=df, n_levels=n_levels)
 
 
-def start_basic_unet(n_levels=1, max_data_points=None):
+def start_stacked_unet(n_levels=1, max_data_points=None):
     original_df, train_df, val_df, test_df, train_loader, val_loader, test_loader \
         = load_data(config.dataset, max_data_points=max_data_points)
     test_mean_iou_levels = []
@@ -126,7 +126,7 @@ def show_results(n_levels=1):
 
 
 if __name__ == '__main__':
-    show_results(n_levels=5)
+    start_stacked_unet(n_levels=1)  # baseline: single Unet
 
 
 
