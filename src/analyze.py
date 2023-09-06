@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from src.utils import grayscale_to_rgb
 
 
-def compute_iou(mask_pred, mask_true):
+def compute_iou(mask_pred, mask_true, smooth=1):
     """
     Compute Intersection over Union (IoU) between true and predicted segmentation masks
     :param mask_pred: Predicted mask
@@ -13,7 +13,7 @@ def compute_iou(mask_pred, mask_true):
     """
     intersection = np.logical_and(mask_true, mask_pred)
     union = np.logical_or(mask_true, mask_pred)
-    iou_score = np.sum(intersection) / np.sum(union)
+    iou_score = (np.sum(intersection) + smooth) / (np.sum(union) + smooth)
     return iou_score
 
 
