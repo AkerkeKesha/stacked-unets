@@ -3,7 +3,7 @@ import numpy as np
 
 
 class IntersectionOverUnion:
-    def __init__(self, num_classes=2, smooth=1):
+    def __init__(self, num_classes=2, smooth=0.0001):
         self.num_classes = num_classes
         self.smooth = smooth
         self.reset()
@@ -13,8 +13,12 @@ class IntersectionOverUnion:
         self.count = 0
 
     def update(self, y_pred, y_true):
-        y_pred = np.argmax(y_pred, axis=1).ravel()  # convert to 1D array
+        if len(y_pred.shape) > 2:  # shape should be (H, W, C) where C > 1
+            y_pred = np.argmax(y_pred, axis=-1)
+
+        y_pred = y_pred.ravel()  # convert to 1D array
         y_true = y_true.ravel()  # convert to 1D array
+
         self.conf_matrix += confusion_matrix(y_true, y_pred, labels=range(self.num_classes))
         self.count += y_true.size
 
