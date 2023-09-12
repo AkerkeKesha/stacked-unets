@@ -100,7 +100,7 @@ def train(train_loader, val_loader, df_train, df_val, level=0):
             elif split == "val":
                 df_val = store_semantic_maps(df, level, semantic_maps)
 
-    torch.save(model.state_dict(), f"{config.output_dir}/level_{level}_unet_{config.dataset}.pt")
+    torch.save(model.state_dict(), f"{config.output_dir}/level{level}_unet_{config.dataset}.pt")
     return train_losses, val_losses, train_ious, val_ious, df_train, df_val
 
 
