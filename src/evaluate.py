@@ -13,8 +13,8 @@ class IntersectionOverUnion:
         self.count = 0
 
     def update(self, y_pred, y_true):
-        if len(y_pred.shape) > 2:  # shape should be (H, W, C) where C > 1
-            y_pred = np.argmax(y_pred, axis=-1)
+        # if len(y_pred.shape) > 2:  # shape should be (H, W, C) where C > 1
+        y_pred = np.argmax(y_pred, axis=1)
 
         y_pred = y_pred.ravel()  # convert to 1D array
         y_true = y_true.ravel()  # convert to 1D array
