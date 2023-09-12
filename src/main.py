@@ -77,7 +77,7 @@ def start_stacked_unet(n_levels=1, max_data_points=None):
         save_metrics(train_iou, train_losses, val_iou, val_losses)
         final_predictions, test_df, mean_iou = predict(test_loader, test_df, level=level)
         test_mean_iou_levels.append(mean_iou)
-        np.save(f'{config.output_dir}/predictions_{config.dataset}.npy',
+        np.save(f'{config.output_dir}/predictions_{config.dataset}_level{level}.npy',
                 final_predictions,
                 fix_imports=True,
                 allow_pickle=False)
