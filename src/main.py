@@ -85,6 +85,7 @@ def start_stacked_unet(n_levels=1, max_data_points=None):
 
     np.save(f'{config.output_dir}/mean_iou_levels_{config.dataset}.npy', np.array(test_mean_iou_levels))
     np.save(f'{config.output_dir}/timings_levels_{config.dataset}.npy', np.array(timing_levels))
+    np.save(f'{config.output_dir}/test_df.npy', test_df.to_dict(), allow_pickle=True)
 
     show_results(n_levels=n_levels)
     visualize_examples(original_df, n_levels=n_levels)
