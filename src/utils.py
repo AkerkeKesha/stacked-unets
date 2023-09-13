@@ -200,17 +200,15 @@ def get_image_name_from_semantic_path(image_path: str):
 
 def store_semantic_maps(df: pd.DataFrame, level: int, semantic_maps: List):
     """
-    Stores the generated semantic maps in the DataFrame.
+    Stores the generated semantic maps in dataframe column.
     """
-    for i, (_, df_row) in enumerate(df.iterrows()):
+    for i, (index, df_row) in enumerate(df.iterrows()):
         image_path = df_row["vv_image_path"]
         image_name = get_image_name_from_path(image_path)
-
         semantic_map = semantic_maps[i]
-
         semantic_map_path = f"{config.labels_dir}/semantic_map_level_{level}_image_{image_name}.png"
         cv2.imwrite(semantic_map_path, semantic_map * 255)
-        df.at[_, f"semantic_map_prev_level"] = semantic_map_path
+        df.at[index, f"semantic_map_prev_level"] = semantic_map_path
     return df
 
 
