@@ -33,20 +33,3 @@ batch_size = 2 if environment == "local" else 48
 # training related
 learning_rate = 1e-3
 num_epochs = 2 if environment == "local" else 20
-
-
-if dataset == "etci":
-    # TODO: IoU per image on each level are going up/down/stable?
-    SAMPLE_IMAGES = [
-        "bangladesh_20170606t115613_x-33_y-29",
-        "bangladesh_20170314t115609_x-11_y-20",
-        "nebraska_20171210t002119_x-13_y-28",
-        "nebraska_20170731t002118_x-9_y-26",
-        "nebraska_20170731t002118_x-10_y-14",
-        "northal_20191227t234659_x-9_y-9",   
-        "northal_20190407t234651_x-19_y-18",
-        "northal_20190712t234656_x-5_y-25",
-        "bangladesh_20170606t115613_x-23_y-15",
-    ]
-else:
-    SAMPLE_INDICES = []
