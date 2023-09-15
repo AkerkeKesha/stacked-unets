@@ -59,8 +59,10 @@ def plot_metrics_per_level(metric_names, metric_labels, plot_filename, level):
     plt.show()
 
 
-def visualize_examples(df, n_levels=1):
-    visualize_prediction(images_list=config.SAMPLE_IMAGES, updated_df=df, n_levels=n_levels)
+def visualize_examples(df, n_samples=5, n_levels=1):
+    df = df.reset_index(drop=True)
+    random_indices = df.sample(n=n_samples).index.tolist()
+    visualize_prediction(image_indices=random_indices, df=df, n_levels=n_levels)
 
 
 def start_stacked_unet(n_levels=1, max_data_points=None):
@@ -88,7 +90,7 @@ def start_stacked_unet(n_levels=1, max_data_points=None):
     np.save(f'{config.output_dir}/test_df.npy', test_df.to_dict(), allow_pickle=True)
 
     show_results(n_levels=n_levels)
-    visualize_examples(original_df, n_levels=n_levels)
+    visualize_examples(test_df, n_samples=10, n_levels=n_levels)
 
 
 def show_results(n_levels=1):
@@ -128,6 +130,7 @@ def show_results(n_levels=1):
 
 if __name__ == '__main__':
     start_stacked_unet(n_levels=1)  # baseline: single Unet
+
 
 
 
