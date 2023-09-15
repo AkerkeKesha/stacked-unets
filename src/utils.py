@@ -116,51 +116,43 @@ def find_prediction_image(searched_value, df):
         return None
 
 
-def visualize_prediction(images_list, updated_df, n_levels=1):
-    fig, axes = plt.subplots(nrows=n_levels+3, ncols=len(images_list), figsize=(12, 2*(n_levels+1)))
+def visualize_prediction(image_indices, df, n_levels=1,  main_title='Random images',
+                         target_filename=f'{config.output_dir}/{config.dataset}_examples.png'):
+    fig, axes = plt.subplots(nrows=n_levels+3, ncols=len(image_indices), figsize=(12, 2 * (n_levels + 1)))
     plt.subplots_adjust(hspace=0.3, wspace=0.3)
-
+    fig.suptitle(main_title, fontsize=12)
     titles = ['RGB input', 'Water mask', 'Flood mask'] + [f'Level {level}' for level in range(n_levels)]
     for row, title in enumerate(titles):
         axes[row, 0].set_ylabel(title, rotation='vertical')
+    for image_position, index_in_df in enumerate(image_indices):
+        axes[0, image_position].set_title(f"Image {image_position + 1}", fontsize=10)
+        df_row = df.iloc[index_in_df]
+        vv_image_path = df_row['vv_image_path']
+        vh_image_path = df_row['vh_image_path']
+        flood_label_path = df_row['flood_label_path']
+        water_body_label_path = df_row['water_body_label_path']
+        prediction_image_name = get_image_name_from_path(vv_image_path)
 
-    for image_index, prediction_image_name in enumerate(images_list):
-        axes[0, image_index].set_title(f"Image {image_index + 1}", fontsize=10)
-        index = find_prediction_image(f'{prediction_image_name}.png', updated_df)
-        if index is not None:
-            df_row = updated_df.iloc[index]
-            vv_image_path = df_row['vv_image_path']
-            vh_image_path = df_row['vh_image_path']
-            flood_label_path = df_row['flood_label_path']
-            water_body_label_path = df_row['water_body_label_path']
+        vv_image = cv2.imread(vv_image_path, 0) / 255.0
+        vh_image = cv2.imread(vh_image_path, 0) / 255.0
+        rgb_input = grayscale_to_rgb(vv_image, vh_image)
+        water_body_label_image = cv2.imread(flood_label_path, 0) / 255.0
+        flood_label_image = cv2.imread(water_body_label_path, 0) / 255.0
 
-            vv_image = cv2.imread(vv_image_path, 0) / 255.0
-            vh_image = cv2.imread(vh_image_path, 0) / 255.0
-            rgb_input = grayscale_to_rgb(vv_image, vh_image)
+        axes[0, image_position].imshow(rgb_input)
+        axes[1, image_position].imshow(water_body_label_image)
+        axes[2, image_position].imshow(flood_label_image)
 
-            water_body_label_image = cv2.imread(flood_label_path, 0) / 255.0
-            flood_label_image = cv2.imread(water_body_label_path, 0) / 255.0
-
-            axes[0, image_index].imshow(rgb_input)
-            axes[1, image_index].imshow(water_body_label_image)
-            axes[2, image_index].imshow(flood_label_image)
-
-            for level in range(n_levels):
-                prediction_path = f"{config.output_dir}/{config.dataset}_labels/semantic_map_level_{level}_image_{prediction_image_name}.png"
-                if not os.path.exists(prediction_path):
-                    raise FileNotFoundError(f"File does not exist: {prediction_path}")
-                if len(prediction_path) == 0:
-                    raise FileNotFoundError(f"Unable to read the image file: {prediction_image_name}")
-
-                prediction = cv2.imread(prediction_path, 0) / 255.0
-                if prediction is None:
-                    raise FileNotFoundError(f"Unable to load the image: {prediction_image_name}")
-                axes[level+3, image_index].imshow(prediction)
-        else:
-            print(f"Skipping visualization for {prediction_image_name} due to missing data")
-
-    plt.tight_layout()
-    plt.savefig(f'{config.output_dir}/{config.dataset}_examples.png', bbox_inches='tight')
+        for level in range(n_levels):
+            prediction_path = f"{config.output_dir}/{config.dataset}_labels/semantic_map_level_{level}_image_{prediction_image_name}.png"
+            if not os.path.exists(prediction_path):
+                raise FileNotFoundError(f"File does not exist: {prediction_path}")
+            prediction = cv2.imread(prediction_path, 0) / 255.0
+            if prediction is None:
+                raise FileNotFoundError(f"Unable to load the image: {prediction_image_name}")
+            axes[level+3, image_position].imshow(prediction)
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    plt.savefig(target_filename, bbox_inches='tight')
     plt.show()
 
 
