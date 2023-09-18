@@ -1,9 +1,9 @@
 # project specific
 dataset/
 *.log
-output/
 .venv/
 .idea/
 .DS_Store
 .ipynb_checkpoints/
 __pycache__/
+output*/
