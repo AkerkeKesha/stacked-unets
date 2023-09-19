@@ -20,17 +20,12 @@ def load_data(dataset, max_data_points=None):
     return original_df, train_df, val_df, test_df, train_loader, val_loader, test_loader
 
 
-def save_metrics(train_iou, train_losses, val_iou, val_losses):
+def save_metrics(train_iou, train_losses, val_iou, val_losses, level):
     metrics = ["train_losses", "val_losses", "train_iou", "val_iou"]
     new_values = [train_losses, val_losses, train_iou, val_iou]
     for metric, new_value in zip(metrics, new_values):
-        metric_file = f'{config.output_dir}/{metric}_{config.dataset}.npy'
-        if os.path.exists(metric_file):
-            old_values = np.load(metric_file)
-            combined_values = np.append(old_values, new_value)
-            np.save(metric_file, combined_values)
-        else:
-            np.save(metric_file, new_value)
+        metric_file = f'{config.output_dir}/{metric}_level{level}_{config.dataset}.npy'
+        np.save(metric_file, new_value)
     print(f"Done saving evaluation metrics/losses on train/val")
 
 
@@ -38,18 +33,10 @@ def plot_metrics_per_level(metric_names, metric_labels, plot_filename, level):
     assert len(metric_names) == len(metric_labels), "Mismatch in number of metrics and labels."
     plt.figure(figsize=(10, 6))
     for metric_name, metric_label in zip(metric_names, metric_labels):
-        metric_values = np.load(f'{config.output_dir}/{metric_name}_{config.dataset}.npy')
-        if level == 0:
-            start_idx = 0
-            end_idx = 5
-            epochs = range(1, 5 + 1)
-        else:
-            start_idx = 5 + (level - 1) * 20
-            end_idx = start_idx + 20
-            epochs = range(1, 20 + 1)
-
-        level_metric_values = metric_values[start_idx:end_idx]
-        plt.plot(epochs, level_metric_values, label=f"{metric_label}")
+        metric_file = f'{config.output_dir}/{metric_name}_level{level}_{config.dataset}.npy'
+        metric_values = np.load(metric_file)
+        epochs = range(1, len(metric_values) + 1)
+        plt.plot(epochs, metric_values, label=f"{metric_label}")
 
     plt.xlabel("Epoch")
     plt.title(f"Metrics for level {level}")
@@ -76,7 +63,7 @@ def start_stacked_unet(n_levels=1, max_data_points=None):
         train_losses, val_losses, train_iou, val_iou, train_df, val_df \
             = train(train_loader, val_loader, train_df, val_df, level=level)
         timing_levels.append(time.time() - start)
-        save_metrics(train_iou, train_losses, val_iou, val_losses)
+        save_metrics(train_iou, train_losses, val_iou, val_losses, level=level)
         final_predictions, test_df, mean_iou = predict(test_loader, test_df, level=level)
         test_mean_iou_levels.append(mean_iou)
         np.save(f'{config.output_dir}/predictions_{config.dataset}_level{level}.npy',
