@@ -144,17 +144,6 @@ def plot_metrics(metrics_dict, metric_name='Loss'):
     plt.show()
 
 
-def distort_semantic_maps(semantic_maps):
-    """
-    might have to run a new prediction after distorting the semantic input.
-    If you have stored the semantic maps, you can load them, distort them, and run just the prediction again.
-    iou_drop = df_test['iou_scores'] - df_test_distorted['iou_scores']
-    """
-    # Distortion logic: put random values to semantic map
-    distorted_semantic_maps = []
-    return distorted_semantic_maps
-
-
 
 
 
