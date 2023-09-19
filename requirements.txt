@@ -11,7 +11,8 @@ segmentation-models-pytorch
 scikit-image
 geopandas
 rasterio
-
+pytest
+seaborn
 
 
 
