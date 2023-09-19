@@ -7,3 +7,4 @@ dataset/
 .ipynb_checkpoints/
 __pycache__/
 output*/
+notebooks/*.png
