@@ -1,3 +1,4 @@
+import os
 from sklearn.metrics import confusion_matrix
 import numpy as np
 import seaborn as sns
@@ -99,18 +100,42 @@ def plot_heatmap(results, list_of_levels):
     plt.show()
 
 
-def plot_metrics(metrics, metric_name='Loss', levels=None):
+def collect_metrics_from_files(metrics_base_names, source_dir, levels, dataset="etci"):
+    """
+    Collect metrics saved in npy files into a dictionary.
+
+    :param metrics_base_names: List of base names of metrics like ["train_losses", "val_losses", "train_iou", "val_iou"]
+    :param levels: List of levels like [0, 1, 2, 3]
+    :param dataset: Name of the dataset (default "etci")
+    :return: Dictionary containing the metrics
+    """
+    metrics_dict = {}
+
+    for metric_base_name in metrics_base_names:
+        metrics_dict[metric_base_name] = {}
+
+        for level in levels:
+            file_name = f"{metric_base_name}_level{level}_{dataset}.npy"
+            file_path = os.path.join(source_dir, file_name)
+
+            if os.path.exists(file_path):
+                metrics_array = np.load(file_path)
+                metrics_dict[metric_base_name][str(level)] = metrics_array.tolist()
+            else:
+                print(f"File {file_name} does not exist.")
+
+    return metrics_dict
+
+
+def plot_metrics(metrics_dict, metric_name='Loss'):
     """
     Plot metrics like loss or IoU for each level.
-    :param metrics: List of metric values for each level. Each element should be list of metric values over time.
-    :param metric_name: Name of the metric ('Loss', 'IoU', etc.)
-    :param levels: Names or identifiers for each level.
-    """
-    if levels is None:
-        levels = [str(i + 1) for i in range(len(metrics))]
 
-    for i, level_metrics in enumerate(metrics):
-        plt.plot(level_metrics, label=f"Level {levels[i]}")
+    :param metrics_dict: Dictionary where keys are level identifiers and values are lists of metric values over epochs.
+    :param metric_name: Name of the metric ('Loss', 'IoU', etc.)
+    """
+    for level, level_metrics in metrics_dict.items():
+        plt.plot(level_metrics, label=f"Level {level}")
 
     plt.xlabel('Epoch')
     plt.ylabel(metric_name)
