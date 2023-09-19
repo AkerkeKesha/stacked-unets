@@ -1,5 +1,7 @@
 from sklearn.metrics import confusion_matrix
 import numpy as np
+import seaborn as sns
+import pandas as pd
 import matplotlib.pyplot as plt
 from src.utils import visualize_prediction
 
@@ -22,13 +24,15 @@ def calculate_iou_score(mask_pred, mask_true, num_classes=2, smooth=0.0001):
     return iou_score
 
 
-def get_top_n_predictions(iou_scores, n):
+def get_top_n_predictions(df, n, level=0):
     """
-    Get the indices of top N best and worst predictions
-    :param iou_scores: List of IoU scores for all the samples
+    Get the indices of top N best and worst predictions for specific level
+    :param df: DataFrame that stores IoU scores in columns named like 'iou_scores_level_x'
+    :param level: Level index to select IoU score column
     :param n: Number of top samples to return
     :return: Indices of top N best and worst predictions
     """
+    iou_scores = df[f'iou_scores_level_{level}'].values
     best_n_idx = np.argsort(iou_scores)[-n:]
     worst_n_idx = np.argsort(iou_scores)[:n]
     return best_n_idx, worst_n_idx
@@ -45,34 +49,72 @@ def visualize_best_worst_predictions(df, best_idx, worst_idx, n_levels=1):
     for indices, title in zip([best_idx, worst_idx], ['Best Predictions', 'Worst Predictions']):
         visualize_prediction(image_indices=indices, df=df,
                              n_levels=n_levels,
-                             target_filename=f'{title}.png',
-                             main_title=title)
+                             target_filename=f'{title}_level{n_levels}.png',
+                             main_title=f'{title} at Level {n_levels}')
 
 
-def compare_iou_scores(iou_scores):
-    delta_iou = iou_scores[1] - iou_scores[0]
-    improved_idx = np.where(delta_iou > 0)[0]
-    worsened_idx = np.where(delta_iou < 0)[0]
-    constant_idx = np.where(delta_iou == 0)[0]
-    return improved_idx, worsened_idx, constant_idx
-
-
-def plot_losses(losses):
+def compare_iou_scores(df, list_of_levels):
     """
-     A faster drop in the curve for example at the 2nd level indicates quicker convergence.
+    :param df: DataFrame that contains IoU scores in columns named like 'iou_scores_level_x'
+    :param list_of_levels: List of levels to compare
+    :return: Dict containing improved, worsened, and constant indices for each level transition
     """
-    plt.plot(losses[0], label="Level 1")
-    plt.plot(losses[1], label="Level 2")
-    plt.legend()
+    results = {}
+    for i in range(len(list_of_levels) - 1):
+        level_a = list_of_levels[i]
+        level_b = list_of_levels[i + 1]
+        delta_iou = df[f'iou_scores_level_{level_b}'] - df[f'iou_scores_level_{level_a}']
+
+        improved_idx = np.where(delta_iou > 0)[0]
+        worsened_idx = np.where(delta_iou < 0)[0]
+        constant_idx = np.where(delta_iou == 0)[0]
+
+        results[f'level_{level_a}_to_{level_b}'] = {
+            'improved': improved_idx,
+            'worsened': worsened_idx,
+            'constant': constant_idx
+        }
+    return results
+
+
+def plot_heatmap(results, list_of_levels):
+    """
+    Plots the heatmap where each cell (i, j) represents the difference in IoU scores when moving from level i to level j
+    @param results: Dict containing improved, worsened, and constant indices for each level transition
+    @param list_of_levels: List of levels to compare
+    @return: heatmap representing the change in IoU scores between different levels.
+    """
+    data = pd.DataFrame(0, index=list_of_levels[:-1], columns=list_of_levels[1:], dtype=int)
+    for transition, counts in results.items():
+        from_level, to_level = transition.split("_to_")
+        from_level = int(from_level.split("_")[-1])
+        to_level = int(to_level.split("_")[-1])
+        data.at[from_level, to_level] = np.round(len(counts['improved']) - len(counts['worsened']))
+
+    sns.heatmap(data, annot=True, fmt="d", cmap="coolwarm")
+
+    plt.title('IoU Score Changes Across Levels')
+    plt.xlabel('To Level')
+    plt.ylabel('From Level')
     plt.show()
 
 
-def plot_iou(ious):
+def plot_metrics(metrics, metric_name='Loss', levels=None):
     """
+    Plot metrics like loss or IoU for each level.
+    :param metrics: List of metric values for each level. Each element should be list of metric values over time.
+    :param metric_name: Name of the metric ('Loss', 'IoU', etc.)
+    :param levels: Names or identifiers for each level.
+    """
+    if levels is None:
+        levels = [str(i + 1) for i in range(len(metrics))]
 
-    """
-    plt.plot(ious[0], label="Level 1")
-    plt.plot(ious[1], label="Level 2")
+    for i, level_metrics in enumerate(metrics):
+        plt.plot(level_metrics, label=f"Level {levels[i]}")
+
+    plt.xlabel('Epoch')
+    plt.ylabel(metric_name)
+    plt.title(f'{metric_name} Over Time')
     plt.legend()
     plt.show()
 
