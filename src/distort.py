@@ -24,13 +24,13 @@ def load_semantic_map(labels_dir, target_level):
     return sem_maps_per_level
 
 
-def distort_semantic_maps(semantic_maps):
+def distort_semantic_maps(semantic_maps, proportion=1.0):
     """
     Distort the proportion of semantic maps with random values
     """
     distorted_semantic_maps = []
     for map_ in semantic_maps:
-        num_indices_to_distort = int(np.prod(map_.shape) * 0.7)  # e.g. distort 70% of the map
+        num_indices_to_distort = int(np.prod(map_.shape) * proportion)  # e.g. distort 100% of the map
         indices = np.random.choice(np.prod(map_.shape), num_indices_to_distort, replace=False)
 
         # Generate random values between [0, num_classes-1] for each selected index
@@ -66,7 +66,7 @@ def predict_with_distortion(test_loader, df_test, level=0, distorted_semantic_ma
                     distorted_map = next(distorted_semantic_maps_iter).to(device)
 
                     # Replace the semantic map (third channel) with the distorted one
-                    image[2, :, :] = distorted_map
+                    image[2, :, :] = distorted_map.view(256, 256)
                     image = image.unsqueeze(0).to(device)
 
                     pred = model(image)
