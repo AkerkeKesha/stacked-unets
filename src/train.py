@@ -19,7 +19,7 @@ def train(train_loader, val_loader, df_train, df_val, level=0):
     train_losses, val_losses = [], []
     train_ious, val_ious = [], []
 
-    num_epochs = 5 if (level == 0 and config.stop == 1) else config.num_epochs
+    num_epochs = 5 if (level == 0 and config.stop == "yes") else config.num_epochs
 
     for epoch in range(num_epochs):
         model.train()
