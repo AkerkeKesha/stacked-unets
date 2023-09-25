@@ -26,8 +26,8 @@ elif dataset == "sn6":
     mask_train_dir = os.path.join(train_dir, 'masks')
     sn6_summary_datapath = os.path.join(train_dir, "SummaryData", "SN6_Train_AOI_11_Rotterdam_Buildings.csv")
 
-# if we want to stop early at level 0, then flag = 1
-stop = os.getenv("STOP", 0)
+# if we want to stop early at level 0, then stop = yes
+stop = os.getenv("STOP", "no")
 
 # hyperparameters
 num_workers = 1 if environment == "local" else 2
