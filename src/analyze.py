@@ -1,9 +1,10 @@
 import os
+import cv2
 from sklearn.metrics import confusion_matrix
 import numpy as np
-import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 from src.utils import visualize_prediction
 
 
@@ -23,6 +24,18 @@ def calculate_iou_score(mask_pred, mask_true, num_classes=2, smooth=0.0001):
     iou_score = np.diag(conf_matrix) / \
                 (conf_matrix.sum(axis=1) + conf_matrix.sum(axis=0) - np.diag(conf_matrix) + smooth)
     return iou_score
+
+
+def filter_positive_flood_masks(df, flood_label_column='flood_label_path'):
+    valid_rows = []
+    for idx, row in df.iterrows():
+        flood_label_path = row[flood_label_column]
+        flood_mask = cv2.imread(flood_label_path, cv2.IMREAD_GRAYSCALE)
+
+        if np.any(flood_mask == 1):
+            valid_rows.append(idx)
+
+    return df.loc[valid_rows]
 
 
 def get_top_n_predictions(df, n, level=0):
@@ -61,42 +74,60 @@ def compare_iou_scores(df, list_of_levels):
     :return: Dict containing improved, worsened, and constant indices for each level transition
     """
     results = {}
-    for i in range(len(list_of_levels) - 1):
-        level_a = list_of_levels[i]
-        level_b = list_of_levels[i + 1]
-        delta_iou = df[f'iou_scores_level_{level_b}'] - df[f'iou_scores_level_{level_a}']
+    for i in range(len(list_of_levels)):
+        for j in range(i+1, len(list_of_levels)):
+            level_a = list_of_levels[i]
+            level_b = list_of_levels[j]
+            delta_iou = df[f'iou_scores_level_{level_b}'] - df[f'iou_scores_level_{level_a}']
 
-        improved_idx = np.where(delta_iou > 0)[0]
-        worsened_idx = np.where(delta_iou < 0)[0]
-        constant_idx = np.where(delta_iou == 0)[0]
+            improved_idx = np.where(delta_iou > 0)[0]
+            worsened_idx = np.where(delta_iou < 0)[0]
+            constant_idx = np.where(delta_iou == 0)[0]
 
-        results[f'level_{level_a}_to_{level_b}'] = {
-            'improved': improved_idx,
-            'worsened': worsened_idx,
-            'constant': constant_idx
-        }
+            results[f'level_{level_a}_to_{level_b}'] = {
+                'improved': improved_idx,
+                'worsened': worsened_idx,
+                'constant': constant_idx
+            }
     return results
 
 
-def plot_heatmap(results, list_of_levels):
+def plot_stacked_bar(results, list_of_levels):
     """
-    Plots the heatmap where each cell (i, j) represents the difference in IoU scores when moving from level i to level j
     @param results: Dict containing improved, worsened, and constant indices for each level transition
     @param list_of_levels: List of levels to compare
-    @return: heatmap representing the change in IoU scores between different levels.
+    @return: a stacked bar plot where each segment represents the difference in IoU scores
+    when moving from level i to level j
     """
+    plt.figure(figsize=(4, 8))
     data = pd.DataFrame(0, index=list_of_levels[:-1], columns=list_of_levels[1:], dtype=int)
     for transition, counts in results.items():
         from_level, to_level = transition.split("_to_")
         from_level = int(from_level.split("_")[-1])
         to_level = int(to_level.split("_")[-1])
         data.at[from_level, to_level] = np.round(len(counts['improved']) - len(counts['worsened']))
+    print(data)
+    bottom_pos = 0
+    bottom_neg = 0
+    n = len(data.columns) * len(data.index)
+    colormap = plt.cm.get_cmap("tab20", n)
 
-    sns.heatmap(data, annot=True, fmt="d", cmap="coolwarm")
+    for idx, row in data.iterrows():
+        for jdx, value in enumerate(row):
+            color = colormap(idx * len(data.columns) + jdx)
+            label = f"Level {idx} to {jdx + 1}"
+            if value > 0:
+                plt.bar('Transitions', value, bottom=bottom_pos, color=color, label=label)
+                bottom_pos += value
+            elif value < 0:
+                plt.bar('Transitions', value, bottom=bottom_neg, color=color, label=label)
+                bottom_neg += value
 
     plt.title('IoU Score Changes Across Levels')
-    plt.xlabel('To Level')
-    plt.ylabel('From Level')
+    plt.xlabel('Transition')
+    plt.ylabel('Net Change in IoU values')
+    plt.legend(title='Level Transitions', bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
     plt.show()
 
 
