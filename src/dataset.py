@@ -59,10 +59,6 @@ class SN6Dataset(Dataset):
         sar_image /= 255.0
         sar_image = np.transpose(sar_image, (1, 2, 0))
 
-        # Calculate padding dimensions
-        pad_height = 32 - (sar_image.shape[0] % 32) if sar_image.shape[0] % 32 != 0 else 0
-        pad_width = 32 - (sar_image.shape[1] % 32) if sar_image.shape[1] % 32 != 0 else 0
-
         semantic_map_path = df_row["semantic_map_prev_level"]
         if semantic_map_path:
             semantic_map = cv2.imread(semantic_map_path, 0) / 255.0
@@ -78,7 +74,10 @@ class SN6Dataset(Dataset):
             input_image = transformed["image"]
             mask = transformed["mask"]
 
-        # Apply padding
+        # Calculate padding dimensions after stacking
+        pad_height = 32 - (input_image.shape[0] % 32) if input_image.shape[0] % 32 != 0 else 0
+        pad_width = 32 - (input_image.shape[1] % 32) if input_image.shape[1] % 32 != 0 else 0
+
         if pad_height > 0 or pad_width > 0:
             input_image = np.pad(input_image, ((0, pad_height), (0, pad_width), (0, 0)), 'constant')
             mask = np.pad(mask, ((0, pad_height), (0, pad_width)), 'constant')
