@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import rasterio
 from torch.utils.data import Dataset
-from torch.nn.functional import pad
+from numpy import pad
 
 
 class ETCIDataset(Dataset):
@@ -78,8 +78,8 @@ class SN6Dataset(Dataset):
             mask = transformed["mask"]
 
         # Apply padding to the stacked input and mask
-        input_image = pad(input_image, (0, pad_width, 0, pad_height), mode='constant', value=0)
-        mask = pad(mask, (0, pad_width, 0, pad_height), mode='constant', value=0)
+        input_image = np.pad(input_image, ((0, pad_height), (0, pad_width), (0, 0)), 'constant')
+        mask = np.pad(mask, ((0, pad_height), (0, pad_width)), 'constant')
 
         example["image"] = np.transpose(input_image, (2, 0, 1)).astype('float32')
         example["mask"] = mask.astype('int64')
