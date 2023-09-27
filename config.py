@@ -31,7 +31,7 @@ stop = os.getenv("STOP", "no")
 
 # hyperparameters
 num_workers = 1 if environment == "local" else 2
-batch_size = 32 if dataset == "sn6" else 48
+batch_size = 16 if dataset == "sn6" else 48
 
 # training related
 learning_rate = 1e-3
