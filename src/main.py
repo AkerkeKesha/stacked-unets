@@ -63,7 +63,7 @@ def start_stacked_unet(n_levels=1, max_data_points=None):
         train_losses, val_losses, train_iou, val_iou, train_df, val_df \
             = train(train_loader, val_loader, train_df, val_df, level=level)
         timing_levels.append(time.time() - start)
-        print(f"Takes{time.time() - start} seconds to train in {level + 1}")
+        print(f"Takes {time.time() - start} seconds to train in level{level + 1}")
         save_metrics(train_iou, train_losses, val_iou, val_losses, level=level)
         final_predictions, test_df, mean_iou = predict(test_loader, test_df, level=level)
         test_mean_iou_levels.append(mean_iou)
