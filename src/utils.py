@@ -185,8 +185,7 @@ def store_semantic_maps(df: pd.DataFrame, level: int, semantic_maps: List):
     Stores the generated semantic maps in dataframe column.
     """
     for i, (index, df_row) in enumerate(df.iterrows()):
-        image_path = df_row["vv_image_path"]
-        image_name = get_image_name_from_path(image_path)
+        image_name = df_row["image_id"] if config.dataset == "sn6" else get_image_name_from_path(df_row["vv_image_path"])
         semantic_map = semantic_maps[i]
         semantic_map_path = f"{config.labels_dir}/semantic_map_level_{level}_image_{image_name}.png"
         cv2.imwrite(semantic_map_path, semantic_map * 255)
@@ -194,7 +193,7 @@ def store_semantic_maps(df: pd.DataFrame, level: int, semantic_maps: List):
     return df
 
 
-def get_sn6_df(split, mode="SAR-Intensity"):
+def build_sn6_dataframe(split, mode="SAR-Intensity"):
     image_ids, image_paths, mask_paths = [], [], []
     semantic_map_paths = []
     if split == "train":
