@@ -10,7 +10,7 @@ import config
 
 def predict(test_loader, df_test, level=0):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = UNet()
+    model = UNet(in_channels=5) if config.dataset == "sn6" else UNet()
     model.load_state_dict(torch.load(f"{config.output_dir}/level{level}_unet_{config.dataset}.pt"))
     model.to(device)
     model.eval()
