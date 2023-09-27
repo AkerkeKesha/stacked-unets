@@ -5,7 +5,7 @@ from dataset import ETCIDataset, SN6Dataset
 from sklearn.model_selection import train_test_split
 from utils import (
     get_etci_df, cleanup_etci_data,
-    cleanup_sn6_data, get_sn6_df, get_sn6_not_processed
+    cleanup_sn6_data, build_sn6_dataframe, get_sn6_not_processed
 )
 import config
 
@@ -48,7 +48,7 @@ def split_etci_data(test_size=0.1, val_size=0.1, max_data_points=None):
 
 
 def split_sn6_data(test_size=0.1, val_size=0.1, max_data_points=None):
-    original_df = get_sn6_df(split="train")
+    original_df = build_sn6_dataframe(split="train")
     summary_df = pd.read_csv(config.sn6_summary_datapath)
     image_ids = summary_df.ImageId.unique()
     not_processed = get_sn6_not_processed(mask_train_dir=config.mask_train_dir, image_ids=image_ids)
