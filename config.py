@@ -14,6 +14,9 @@ if not os.path.exists(output_dir):
 
 dataset = os.getenv("DATASET", "etci")
 labels_dir = f"{output_dir}/{dataset}_labels"
+mask_train_dir = None
+sn6_summary_datapath = None
+
 if not os.path.exists(labels_dir):
     os.makedirs(labels_dir)
 
