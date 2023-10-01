@@ -4,7 +4,7 @@ from sklearn.metrics import confusion_matrix
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
+import config
 from src.utils import visualize_prediction
 
 
@@ -32,7 +32,7 @@ def filter_positive_flood_masks(df, flood_label_column='flood_label_path'):
         flood_label_path = row[flood_label_column]
         flood_mask = cv2.imread(flood_label_path, cv2.IMREAD_GRAYSCALE)
 
-        if np.any(flood_mask == 1):
+        if np.any(flood_mask == 255):
             valid_rows.append(idx)
 
     return df.loc[valid_rows]
@@ -106,7 +106,6 @@ def plot_stacked_bar(results, list_of_levels):
         from_level = int(from_level.split("_")[-1])
         to_level = int(to_level.split("_")[-1])
         data.at[from_level, to_level] = np.round(len(counts['improved']) - len(counts['worsened']))
-    print(data)
     bottom_pos = 0
     bottom_neg = 0
     n = len(data.columns) * len(data.index)
@@ -122,12 +121,12 @@ def plot_stacked_bar(results, list_of_levels):
             elif value < 0:
                 plt.bar('Transitions', value, bottom=bottom_neg, color=color, label=label)
                 bottom_neg += value
-
+    print(data)
     plt.title('IoU Score Changes Across Levels')
     plt.xlabel('Transition')
     plt.ylabel('Net Change in IoU values')
     plt.legend(title='Level Transitions', bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.tight_layout()
+    plt.savefig(f'{config.dataset}_stacked_bar.png', bbox_inches='tight')
     plt.show()
 
 
@@ -172,6 +171,7 @@ def plot_metrics(metrics_dict, metric_name='Loss'):
     plt.ylabel(metric_name)
     plt.title(f'{metric_name} Over Time')
     plt.legend()
+    plt.savefig(f'{metric_name.lower()}_{config.dataset}.png', bbox_inches='tight')
     plt.show()
 
 
