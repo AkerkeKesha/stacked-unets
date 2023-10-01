@@ -151,7 +151,7 @@ def visualize_prediction(image_indices, df, n_levels=1,  main_title='Random imag
             if prediction is None:
                 raise FileNotFoundError(f"Unable to load the image: {prediction_image_name}")
             axes[level+3, image_position].imshow(prediction)
-    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    plt.tight_layout()
     plt.savefig(target_filename, bbox_inches='tight')
     plt.show()
 
