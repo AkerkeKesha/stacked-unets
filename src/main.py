@@ -1,7 +1,5 @@
 import time
-import os
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 import config
 from train import train
@@ -49,7 +47,7 @@ def plot_metrics_per_level(metric_names, metric_labels, plot_filename, level):
 def visualize_examples(df, n_samples=5, n_levels=1):
     df = df.reset_index(drop=True)
     random_indices = df.sample(n=n_samples).index.tolist()
-    visualize_prediction(image_indices=random_indices, df=df, n_levels=n_levels)
+    visualize_prediction(image_indices=random_indices, df=df, n_levels=n_levels, dataset=config.dataset)
 
 
 def start_stacked_unet(n_levels=1, max_data_points=None):
@@ -71,7 +69,6 @@ def start_stacked_unet(n_levels=1, max_data_points=None):
                 final_predictions,
                 fix_imports=True,
                 allow_pickle=False)
-        original_df = pd.concat([train_df, val_df, test_df])
 
     np.save(f'{config.output_dir}/mean_iou_levels_{config.dataset}.npy', np.array(test_mean_iou_levels))
     np.save(f'{config.output_dir}/timings_levels_{config.dataset}.npy', np.array(timing_levels))
