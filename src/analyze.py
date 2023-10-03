@@ -52,17 +52,23 @@ def get_top_n_predictions(df, n, level=0):
     return best_n_idx, worst_n_idx
 
 
-def visualize_best_worst_predictions(df, best_idx, worst_idx, n_levels=1):
+def visualize_best_worst_predictions(df, best_idx, worst_idx, n_levels=1,
+                                     dataset=config.dataset,
+                                output_dir=config.output_dir):
     """
     Visualize best and worst predictions depending on the given level
-    :param df: dataframe that stores paths to images, ground truth masks and predicted masks
-    :param best_idx: Indices of the best predictions
-    :param worst_idx: Indices of the worst predictions
-    :param n_levels: the number of levels to visualize
+    @param df: dataframe that stores paths to images, ground truth masks and predicted masks
+    @param best_idx: Indices of the best predictions
+    @param worst_idx: Indices of the worst predictions
+    @param n_levels: the number of levels to visualize
+    @param output_dir: the directory where predictions are stored
+    @param dataset: the dataset name, e.g. etci
     """
     for indices, title in zip([best_idx, worst_idx], ['Best Predictions', 'Worst Predictions']):
         visualize_prediction(image_indices=indices, df=df,
                              n_levels=n_levels,
+                             dataset=dataset,
+                             output_dir=output_dir,
                              target_filename=f'{title}_level{n_levels}.png',
                              main_title=f'{title} at Level {n_levels}')
 
