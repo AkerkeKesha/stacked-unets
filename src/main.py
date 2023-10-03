@@ -50,7 +50,10 @@ def visualize_examples(df, n_samples=5, n_levels=1):
     visualize_prediction(image_indices=random_indices, df=df, n_levels=n_levels, dataset=config.dataset)
 
 
-def start_stacked_unet(n_levels=1, max_data_points=None):
+def start_stacked_unet(n_levels, max_data_points, run,
+                       all_test_mean_iou_levels,
+                       all_train_losses,
+                       all_val_losses):
     original_df, train_df, val_df, test_df, train_loader, val_loader, test_loader \
         = load_data(config.dataset, max_data_points=max_data_points)
     test_mean_iou_levels = []
@@ -65,17 +68,32 @@ def start_stacked_unet(n_levels=1, max_data_points=None):
         save_metrics(train_iou, train_losses, val_iou, val_losses, level=level)
         final_predictions, test_df, mean_iou = predict(test_loader, test_df, level=level)
         test_mean_iou_levels.append(mean_iou)
-        np.save(f'{config.output_dir}/predictions_{config.dataset}_level{level}.npy',
+        np.save(f'{config.output_dir}/predictions_{config.dataset}_run{run}_level{level}.npy',
                 final_predictions,
                 fix_imports=True,
                 allow_pickle=False)
 
-    np.save(f'{config.output_dir}/mean_iou_levels_{config.dataset}.npy', np.array(test_mean_iou_levels))
-    np.save(f'{config.output_dir}/timings_levels_{config.dataset}.npy', np.array(timing_levels))
-    np.save(f'{config.output_dir}/test_df.npy', test_df.to_dict(), allow_pickle=True)
+        if level not in all_test_mean_iou_levels:
+            all_test_mean_iou_levels[level] = []
+        if level not in all_train_losses:
+            all_train_losses[level] = []
+        if level not in all_val_losses:
+            all_val_losses[level] = []
+
+        all_test_mean_iou_levels[level].append(test_mean_iou_levels)
+        all_train_losses[level].append(train_losses)
+        all_val_losses[level].append(val_losses)
+
+        np.save(f'{config.output_dir}/mean_iou_run{run}_level{level}_{config.dataset}.npy', mean_iou)
+        np.save(f'{config.output_dir}/train_losses_run{run}_level{level}_{config.dataset}.npy', train_losses)
+        np.save(f'{config.output_dir}/val_losses_run{run}_level{level}_{config.dataset}.npy', val_losses)
+
+    np.save(f'{config.output_dir}/mean_iou_run{run}_{config.dataset}.npy', np.array(test_mean_iou_levels))
+    np.save(f'{config.output_dir}/timings_run{run}_{config.dataset}.npy', np.array(timing_levels))
+    np.save(f'{config.output_dir}/test_df_run{run}.npy', test_df.to_dict(), allow_pickle=True)
 
     show_results(n_levels=n_levels)
-    visualize_examples(test_df, n_samples=10, n_levels=n_levels)
+    visualize_examples(test_df, n_samples=5, n_levels=n_levels)
 
 
 def show_results(n_levels=1):
@@ -113,8 +131,46 @@ def show_results(n_levels=1):
     print("Done plotting results")
 
 
-if __name__ == '__main__':
-    start_stacked_unet(n_levels=1)  # baseline: single Unet
+def run_experiments(runs=3, n_levels=1, max_data_points=None):
+    all_test_mean_iou_levels = {}
+    all_train_losses = {}
+    all_val_losses = {}
+    for run in range(runs):
+        print(f"Run: [{run + 1} / {runs}]")
+        start_stacked_unet(n_levels, max_data_points, run,
+                           all_test_mean_iou_levels,
+                           all_train_losses,
+                           all_val_losses)
+
+    for level in range(n_levels):
+        mean_iou = np.mean(all_test_mean_iou_levels[level], axis=0)
+        std_iou = np.std(all_test_mean_iou_levels[level], axis=0)
+
+        mean_train_loss = np.mean(all_train_losses[level], axis=0)
+        std_train_loss = np.std(all_train_losses[level], axis=0)
+
+        mean_val_loss = np.mean(all_val_losses[level], axis=0)
+        std_val_loss = np.std(all_val_losses[level], axis=0)
+
+        np.save(f'{config.output_dir}/mean_iou_level{level}_{config.dataset}.npy', mean_iou)
+        np.save(f'{config.output_dir}/std_iou_level{level}_{config.dataset}.npy', std_iou)
+
+        np.save(f'{config.output_dir}/mean_train_loss_level{level}_{config.dataset}.npy', mean_train_loss)
+        np.save(f'{config.output_dir}/std_train_loss_level{level}_{config.dataset}.npy', std_train_loss)
+
+        np.save(f'{config.output_dir}/mean_val_loss_level{level}_{config.dataset}.npy', mean_val_loss)
+        np.save(f'{config.output_dir}/std_val_loss_level{level}_{config.dataset}.npy', std_val_loss)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
