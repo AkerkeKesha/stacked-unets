@@ -38,4 +38,4 @@ batch_size = 16 if dataset == "sn6" else 48
 
 # training related
 learning_rate = 1e-3
-num_epochs = 2 if environment == "local" else 20
+num_epochs = 50 if dataset == "sn6" else 20
