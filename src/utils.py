@@ -5,6 +5,8 @@ import os
 import numpy as np
 import pandas as pd
 import cv2
+import rasterio as rs
+from rasterio.plot import show
 import config
 import matplotlib.pyplot as plt
 
@@ -68,34 +70,28 @@ def cleanup_etci_data(df):
     return filtered_df
 
 
-def visualize_image_and_masks(df_row, figure_size=(25, 15)):
-    vv_image_path = df_row['vv_image_path']
-    vh_image_path = df_row['vh_image_path']
-    flood_label_path = df_row['flood_label_path']
-    water_body_label_path = df_row['water_body_label_path']
-
-    vv_image = cv2.imread(vv_image_path, 0) / 255.0
-    vh_image = cv2.imread(vh_image_path, 0) / 255.0
-    rgb_image = grayscale_to_rgb(vv_image, vh_image)
-
-    water_body_label_image = cv2.imread(water_body_label_path, 0) / 255.0
+def plot_etci_image_and_masks(df_row, figure_size=(25, 15)):
+    dataset = "etci"
+    image_cols, mask_cols, _ = get_columns(dataset=dataset)
+    rgb_image = load_images(df_row,dataset=dataset)
+    mask_data = load_masks(df_row, mask_cols)
+    water_body_label_image = mask_data[0]
+    flood_label_image = mask_data[1]
     plt.figure(figsize=figure_size)
 
-    rgb_filename = os.path.basename(vv_image_path)
     if df_row.isnull().sum() > 0:
         plt.subplot(1, 2, 1)
         plt.imshow(rgb_image)
-        plt.title(rgb_filename)
+        plt.title("Input image")
 
         plt.subplot(1, 2, 2)
-        plt.imshow(water_body_label_image)
+        plt.imshow()
         plt.title('Water body mask')
     else:
-        flood_label_image = cv2.imread(flood_label_path, 0) / 255.0
 
         plt.subplot(1, 3, 1)
         plt.imshow(rgb_image)
-        plt.title(rgb_filename)
+        plt.title("Input image")
 
         plt.subplot(1, 3, 2)
         plt.imshow(flood_label_image)
@@ -116,44 +112,89 @@ def find_prediction_image(searched_value, df):
         return None
 
 
-def visualize_prediction(image_indices, df, n_levels=1,  main_title='Random images',
-                         target_filename=f'{config.output_dir}/{config.dataset}_examples.png'):
-    fig, axes = plt.subplots(nrows=n_levels+3, ncols=len(image_indices), figsize=(12, 2 * (n_levels + 1)))
+def load_images(df_row, dataset):
+    if dataset == 'etci':
+        vv_image = cv2.imread(df_row['vv_image_path'], 0) / 255.0
+        vh_image = cv2.imread(df_row['vh_image_path'], 0) / 255.0
+        return grayscale_to_rgb(vv_image, vh_image)
+    elif dataset == 'sn6':
+        return rs.open(df_row['image_path'])
+
+
+def load_masks(df_row, mask_cols):
+    return [cv2.imread(df_row[col], 0) / 255.0 for col in mask_cols]
+
+
+def display_data(ax, data, title, dataset, data_type):
+    ax.set_title(title, fontsize=10)
+    ax.axis('off')
+    if dataset == 'etci' or data_type == 'mask':
+        ax.imshow(data)
+    elif dataset == 'sn6' and data_type == 'image':
+        show(data, ax=ax)
+    else:
+        raise ValueError("Invalid dataset or data type")
+
+
+def visualize_prediction(image_indices, df, n_levels=1,
+                         dataset="etci",
+                         output_dir=config.output_dir,
+                         main_title='Random images',
+                         target_filename=None):
+    if target_filename is None:
+        target_filename = f'{output_dir}/{dataset}_examples.png'
+
+    image_cols, mask_cols, titles = get_columns(dataset)
+
+    total_rows = len(titles) + n_levels
+    fig, axes = plt.subplots(nrows=total_rows, ncols=len(image_indices), figsize=(12, 2 * total_rows))
     plt.subplots_adjust(hspace=0.3, wspace=0.3)
     fig.suptitle(main_title, fontsize=12)
-    titles = ['RGB input', 'Water mask', 'Flood mask'] + [f'Level {level}' for level in range(n_levels)]
+
     for row, title in enumerate(titles):
         axes[row, 0].set_ylabel(title, rotation='vertical')
+
     for image_position, index_in_df in enumerate(image_indices):
         axes[0, image_position].set_title(f"Image {image_position + 1}", fontsize=10)
         df_row = df.iloc[index_in_df]
-        vv_image_path = df_row['vv_image_path']
-        vh_image_path = df_row['vh_image_path']
-        flood_label_path = df_row['flood_label_path']
-        water_body_label_path = df_row['water_body_label_path']
-        prediction_image_name = get_image_name_from_path(vv_image_path)
 
-        vv_image = cv2.imread(vv_image_path, 0) / 255.0
-        vh_image = cv2.imread(vh_image_path, 0) / 255.0
-        rgb_input = grayscale_to_rgb(vv_image, vh_image)
-        water_body_label_image = cv2.imread(flood_label_path, 0) / 255.0
-        flood_label_image = cv2.imread(water_body_label_path, 0) / 255.0
+        image_data = load_images(df_row, dataset)
+        display_data(axes[0, image_position], image_data, f"Image {image_position + 1}", dataset, 'image')
 
-        axes[0, image_position].imshow(rgb_input)
-        axes[1, image_position].imshow(water_body_label_image)
-        axes[2, image_position].imshow(flood_label_image)
+        mask_data = load_masks(df_row, mask_cols)
+        for i, mask in enumerate(mask_data):
+            display_data(axes[i + 1, image_position], mask, titles[i + 1], dataset, 'mask')
 
         for level in range(n_levels):
-            prediction_path = f"{config.output_dir}/{config.dataset}_labels/semantic_map_level_{level}_image_{prediction_image_name}.png"
+            pred_image = get_image_name_from_path(df_row[image_cols[0]]) if dataset == "etci" else df_row["image_id"]
+            prediction_path = f"{output_dir}/{dataset}_labels/" \
+                              f"semantic_map_level_{level}_image_{pred_image}.png"
+
             if not os.path.exists(prediction_path):
                 raise FileNotFoundError(f"File does not exist: {prediction_path}")
+
             prediction = cv2.imread(prediction_path, 0) / 255.0
             if prediction is None:
-                raise FileNotFoundError(f"Unable to load the image: {prediction_image_name}")
-            axes[level+3, image_position].imshow(prediction)
+                raise FileNotFoundError(f"Unable to load the image: {pred_image}")
+            display_data(axes[level+len(titles), image_position], prediction, f"Level {level}", dataset, 'image')
+
     plt.tight_layout()
     plt.savefig(target_filename, bbox_inches='tight')
     plt.show()
+
+
+def get_columns(dataset):
+    if dataset == 'etci':
+        image_cols = ['vv_image_path', 'vh_image_path']
+        mask_cols = ['water_body_label_path', 'flood_label_path']
+        titles = ['Image', 'Water', 'Flood']
+    elif dataset == 'sn6':
+        image_cols = ['image_path']
+        mask_cols = ['mask_path']
+        titles = ['Image', 'Mask']
+    else:
+        raise ValueError("Invalid dataset name")
+    return image_cols, mask_cols, titles
 
 
 def get_image_name_from_path(image_path: str):
@@ -244,6 +285,15 @@ def get_sn6_test_image_ids(test_dir):
     return image_ids
 
 
+def plot_sn6_image_and_masks(image_name, df, figure_size=(10, 10)):
+    index_in_df = df[df.image_id.str.match(image_name)].index[0]
+    df_row = df.iloc[index_in_df]
+    image_col, mask_col, _ = get_columns(dataset="sn6")
+    sar_image = load_images(df_row, dataset="sn6")
+    mask_data = load_masks(df_row, mask_col)
 
+    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=figure_size)
+    display_data(ax1, sar_image, 'SAR Image', 'sn6', 'image')
+    display_data(ax2, mask_data[0], 'Mask', 'sn6', 'mask')
 
-
+    plt.show()
