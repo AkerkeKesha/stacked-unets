@@ -56,18 +56,19 @@ def start_stacked_unet(n_levels, max_data_points, run,
                        all_val_losses):
     original_df, train_df, val_df, test_df, train_loader, val_loader, test_loader \
         = load_data(config.dataset, max_data_points=max_data_points)
-    test_mean_ious = []
-    timing_levels = []
+    test_mean_ious, average_entropies = [], []
+    timings = []
     for level in range(n_levels):
         print(f"Level: [{level + 1} / {n_levels}]")
         start = time.time()
         train_losses, val_losses, train_iou, val_iou, train_df, val_df \
             = train(train_loader, val_loader, train_df, val_df, level=level)
-        timing_levels.append(time.time() - start)
+        timings.append(time.time() - start)
         print(f"Takes {time.time() - start} seconds to train in level{level + 1}")
         save_metrics(train_iou, train_losses, val_iou, val_losses, level=level)
-        final_predictions, test_df, mean_iou = predict(test_loader, test_df, level=level)
+        final_predictions, test_df, mean_iou, avg_entropy = predict(test_loader, test_df, level=level)
         test_mean_ious.append(mean_iou)
+        average_entropies.append(avg_entropy)
         np.save(f'{config.output_dir}/predictions_{config.dataset}_run{run}_level{level}.npy',
                 final_predictions,
                 fix_imports=True,
@@ -89,7 +90,8 @@ def start_stacked_unet(n_levels, max_data_points, run,
         np.save(f'{config.output_dir}/val_losses_run{run}_level{level}_{config.dataset}.npy', val_losses)
 
     np.save(f'{config.output_dir}/mean_iou_run{run}_{config.dataset}.npy', np.array(test_mean_ious))
-    np.save(f'{config.output_dir}/timings_run{run}_{config.dataset}.npy', np.array(timing_levels))
+    np.save(f'{config.output_dir}/timings_run{run}_{config.dataset}.npy', np.array(timings))
+    np.save(f'{config.output_dir}/mean_entropy_run{run}_{config.dataset}.npy', np.array(average_entropies))
     np.save(f'{config.output_dir}/test_df_run{run}.npy', test_df.to_dict(), allow_pickle=True)
 
     show_results(n_levels=n_levels, run=run)
@@ -143,14 +145,14 @@ def run_experiments(runs=3, n_levels=1, max_data_points=None):
                            all_val_losses)
 
     for level in range(n_levels):
-        mean_iou = np.mean(all_test_mean_ious[level], axis=0)
-        std_iou = np.std(all_test_mean_ious[level], axis=0)
+        mean_iou = np.mean(all_test_mean_ious[level])
+        std_iou = np.std(all_test_mean_ious[level])
 
-        mean_train_loss = np.mean(all_train_losses[level], axis=0)
-        std_train_loss = np.std(all_train_losses[level], axis=0)
+        mean_train_loss = np.mean(all_train_losses[level])
+        std_train_loss = np.std(all_train_losses[level])
 
-        mean_val_loss = np.mean(all_val_losses[level], axis=0)
-        std_val_loss = np.std(all_val_losses[level], axis=0)
+        mean_val_loss = np.mean(all_val_losses[level])
+        std_val_loss = np.std(all_val_losses[level])
 
         print(f"Level: {level + 1}")
         print(f"Mean IoU: {mean_iou:.2f}, Std Dev IoU: {std_iou:.2f}")
