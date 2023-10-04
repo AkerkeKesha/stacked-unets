@@ -31,6 +31,7 @@ elif dataset == "sn6":
 
 # if we want to stop early at level 0, then stop = yes
 stop = os.getenv("STOP", "no")
+output_type = os.getenv("OUTPUT_TYPE", "semantic_map")
 
 # hyperparameters
 num_workers = 1 if environment == "local" else 2
