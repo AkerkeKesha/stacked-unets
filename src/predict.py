@@ -4,7 +4,7 @@ import numpy as np
 from tqdm import tqdm
 from model import UNet
 from evaluate import IntersectionOverUnion
-from utils import store_semantic_maps
+from utils import store_semantic_maps, store_softmax_probs
 import config
 
 
@@ -20,7 +20,8 @@ def predict(test_loader, df_test, level=0):
 
     final_predictions, true_labels = [], []
     iou_metric = IntersectionOverUnion(num_classes=2)
-    semantic_maps , entropy_values = [], []
+    semantic_maps, entropy_values = [], []
+    softmax_probs = []
     try:
         with torch.no_grad():
             for i, batch in enumerate(tqdm(test_loader)):
@@ -39,6 +40,9 @@ def predict(test_loader, df_test, level=0):
                     entropy = -torch.sum(softmax_probs * torch.log(softmax_probs + 1e-9), dim=1)
                     entropy = entropy.detach().cpu().numpy()
                     entropy_values.append(np.mean(entropy))
+                    probs = softmax_probs[:, 1, :, :]  # Probability of the second class
+                    probs = probs.cpu().numpy()
+                    softmax_probs.append(probs[0])
 
                     iou_metric.update(pred.detach().cpu().numpy(), true_mask)
 
@@ -60,5 +64,10 @@ def predict(test_loader, df_test, level=0):
     overall_avg_entropy = np.mean(entropy_values)
     print(f"Overall average entropy for the entire test set: {overall_avg_entropy:.4f}")
     final_predictions = np.concatenate(final_predictions, axis=0)
-    df_test = store_semantic_maps(df_test, level, semantic_maps)
+    if config.output_type == "semantic_map":
+        df_test = store_semantic_maps(df_test, level, semantic_maps)
+    elif config.output_type == "softmax_prob":
+        df_test = store_softmax_probs(df_test, level, softmax_probs)
+    else:
+        raise ValueError("Invalid output type")
     return final_predictions, df_test, mean_iou, overall_avg_entropy

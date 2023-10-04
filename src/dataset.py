@@ -4,6 +4,8 @@ import rasterio
 from torch.utils.data import Dataset
 from numpy import pad
 
+import config
+
 
 class ETCIDataset(Dataset):
     def __init__(self, dataframe, split, transform=None):
@@ -21,13 +23,26 @@ class ETCIDataset(Dataset):
         vv_image = cv2.imread(df_row["vv_image_path"], 0) / 255.0
         vh_image = cv2.imread(df_row["vh_image_path"], 0) / 255.0
 
-        semantic_map_path = df_row[f"semantic_map_prev_level"]
-        if semantic_map_path:
-            semantic_map = cv2.imread(semantic_map_path, 0) / 255.0
-            input_image = np.dstack((vv_image, vh_image, semantic_map))
+        if config.output_type == "semantic_map":
+            semantic_map_path = df_row[f"semantic_map_prev_level"]
+            if semantic_map_path:
+                semantic_map = cv2.imread(semantic_map_path, 0) / 255.0
+                input_image = np.dstack((vv_image, vh_image, semantic_map))
+            else:
+                dummy_channel = np.zeros_like(vv_image)
+                input_image = np.dstack((vv_image, vh_image, dummy_channel))
+        elif config.output_type == "softmax_prob":
+            softmax_prob_path = df_row[f"softmax_prob_prev_level"]
+            if softmax_prob_path:
+                softmax_prob = np.load(softmax_prob_path)
+                scaled_softmax_prob = np.round(255 * softmax_prob).astype('uint8')
+                scaled_softmax_prob = cv2.imread(scaled_softmax_prob, 0)
+                input_image = np.dstack((vv_image, vh_image, scaled_softmax_prob))
+            else:
+                dummy_channel = np.zeros_like(vv_image)
+                input_image = np.dstack((vv_image, vh_image, dummy_channel))
         else:
-            dummy_channel = np.zeros_like(vv_image)
-            input_image = np.dstack((vv_image, vh_image, dummy_channel))
+            raise ValueError("Invalid output type to build one of input channels")
 
         flood_mask = cv2.imread(df_row["flood_label_path"], 0) / 255.0
         if self.transform:

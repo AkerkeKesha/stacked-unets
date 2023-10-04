@@ -4,7 +4,7 @@ import torch.nn as nn
 import config
 from tqdm.notebook import tqdm
 from model import UNet
-from utils import store_semantic_maps
+from utils import store_semantic_maps, store_softmax_probs
 from evaluate import IntersectionOverUnion
 
 
@@ -109,6 +109,7 @@ def train(train_loader, val_loader, df_train, df_val, level=0):
         model.eval()
         with torch.no_grad():
             semantic_maps = []
+            softmax_probs = []
             for batch in tqdm(loader):
                 image = batch["image"].to(device)
                 for img in image:
@@ -119,10 +120,24 @@ def train(train_loader, val_loader, df_train, df_val, level=0):
                     semantic_map = semantic_map.astype("uint8")
                     semantic_maps.append(semantic_map)
 
+                    probs = torch.softmax(model(img), dim=1)[:, 1, :, :]  # Probability of the second class
+                    probs = probs.cpu().numpy()
+                    softmax_probs.append(probs[0])
+
             if split == "train":
-                df_train = store_semantic_maps(df, level, semantic_maps)
+                if config.output_type == "semantic_map":
+                    df_train = store_semantic_maps(df, level, semantic_maps)
+                elif config.output_type == "softmax_prob":
+                    df_train = store_softmax_probs(df, level, softmax_probs)
+                else:
+                    raise ValueError("Invalid output type")
             elif split == "val":
-                df_val = store_semantic_maps(df, level, semantic_maps)
+                if config.output_type == "semantic_map":
+                    df_val = store_semantic_maps(df, level, semantic_maps)
+                elif config.output_type == "softmax_prob":
+                    df_val = store_softmax_probs(df, level, softmax_probs)
+                else:
+                    raise ValueError("Invalid output type")
 
     torch.save(model.state_dict(), f"{config.output_dir}/level{level}_unet_{config.dataset}.pt")
     return train_losses, val_losses, train_ious, val_ious, df_train, df_val

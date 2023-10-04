@@ -25,7 +25,8 @@ def sar_to_grayscale(vv_image, vh_image):
 
 def get_etci_df(dirname, split):
     vv_image_paths = sorted(glob(dirname + '/*/*/vv/*.png', recursive=True))
-    vh_image_paths, flood_label_paths, water_body_label_paths, region_names, semantic_map_paths = [], [], [], [], []
+    vh_image_paths, flood_label_paths, water_body_label_paths, region_names = [], [], [], []
+    softmax_prob_paths, semantic_map_paths = [], []
     for i in range(len(vv_image_paths)):
         vv_image_path = pathlib.PurePath(vv_image_paths[i])
         region_dirname = vv_image_path.parent.parent.parent
@@ -46,6 +47,7 @@ def get_etci_df(dirname, split):
 
         region_names.append(os.path.basename(vv_image_paths[i]).split("_")[0])
         semantic_map_paths.append("")
+        softmax_prob_paths.append("")
 
     paths = {
         "vv_image_path": vv_image_paths,
@@ -54,6 +56,7 @@ def get_etci_df(dirname, split):
         "water_body_label_path": water_body_label_paths,
         "region": region_names,
         "semantic_map_prev_level": semantic_map_paths,
+        "softmax_prob_prev_level": softmax_prob_paths,
     }
     return pd.DataFrame(paths)
 
@@ -231,6 +234,19 @@ def store_semantic_maps(df: pd.DataFrame, level: int, semantic_maps: List):
         semantic_map_path = f"{config.labels_dir}/semantic_map_level_{level}_image_{image_name}.png"
         cv2.imwrite(semantic_map_path, semantic_map * 255)
         df.at[index, f"semantic_map_prev_level"] = semantic_map_path
+    return df
+
+
+def store_softmax_probs(df: pd.DataFrame, level: int, softmax_probs: List):
+    """
+    Stores the softmax probabilities in npy and its path into dataframe column.
+    """
+    for i, (index, df_row) in enumerate(df.iterrows()):
+        image_name = df_row["image_id"] if config.dataset == "sn6" else get_image_name_from_path(df_row["vv_image_path"])
+        softmax_prob = softmax_probs[i]
+        softmax_prob_path = f"{config.labels_dir}/softmax_prob_level_{level}_image_{image_name}.npy"
+        np.save(softmax_prob_path, softmax_prob)
+        df.at[index, f"softmax_prob_prev_level"] = softmax_prob_path
     return df
 
 
