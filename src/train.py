@@ -24,6 +24,8 @@ def train(train_loader, val_loader, df_train, df_val, level=0):
     for epoch in range(num_epochs):
         model.train()
         training_loss = 0
+        sum_mean = torch.zeros([3], dtype=torch.float32).to(device)
+        sum_std = torch.zeros([3], dtype=torch.float32).to(device)
         iou_metric = IntersectionOverUnion(num_classes=2)
         try:
             for batch in tqdm(train_loader):
@@ -35,6 +37,12 @@ def train(train_loader, val_loader, df_train, df_val, level=0):
                 training_loss += loss.item()
                 loss.backward()
                 optimizer.step()
+
+                batch_mean = torch.mean(image, dim=[0, 2, 3])
+                batch_std = torch.std(image, dim=[0, 2, 3])
+                sum_mean += batch_mean
+                sum_std += batch_std
+
                 iou_metric.update(pred.detach().cpu().numpy(), mask.cpu().numpy())
         except Exception as e:
             print(f"An exception occurred during training: {e}")
@@ -47,14 +55,21 @@ def train(train_loader, val_loader, df_train, df_val, level=0):
         training_loss = training_loss / len(train_loader)
         train_losses.append(training_loss)
 
+        avg_mean = sum_mean / len(train_loader)
+        avg_std = sum_std / len(train_loader)
+
         if (epoch + 1) % 10 == 0:
             print(f"Epoch: [{epoch + 1} / {num_epochs}]")
             print(f"Train mean IoU = {mean_iou:.4f}")
             print(f"Train mean loss = {training_loss:.4f}")
+            print(f"Avg Input Feature Mean: {avg_mean.cpu().numpy()}")
+            print(f"Avg Input Feature Std: {avg_std.cpu().numpy()}")
 
         model.eval()
         iou_metric = IntersectionOverUnion(num_classes=2)
         val_loss = 0
+        sum_mean = torch.zeros([3], dtype=torch.float32).to(device)
+        sum_std = torch.zeros([3], dtype=torch.float32).to(device)
         try:
             with torch.no_grad():
                 for batch in tqdm(val_loader):
@@ -63,6 +78,12 @@ def train(train_loader, val_loader, df_train, df_val, level=0):
                     pred = model(image)
                     loss = criterion(pred, mask)
                     val_loss += loss.item()
+
+                    batch_mean = torch.mean(image, dim=[0, 2, 3])
+                    batch_std = torch.std(image, dim=[0, 2, 3])
+                    sum_mean += batch_mean
+                    sum_std += batch_std
+
                     iou_metric.update(pred.detach().cpu().numpy(), mask.cpu().numpy())
 
                 mean_iou = iou_metric.mean_iou()
@@ -71,9 +92,14 @@ def train(train_loader, val_loader, df_train, df_val, level=0):
                 val_loss = val_loss / len(val_loader)
                 val_losses.append(val_loss)
 
+                avg_mean = sum_mean / len(train_loader)
+                avg_std = sum_std / len(train_loader)
+
                 if (epoch + 1) % 10 == 0:
                     print(f"Val mean IoU = {mean_iou:.4f}")
                     print(f"Val mean loss = {val_loss:.4f}")
+                    print(f"Avg Input Feature Mean: {avg_mean.cpu().numpy()}")
+                    print(f"Avg Input Feature Std: {avg_std.cpu().numpy()}")
 
         except Exception as ve:
             print(f"An exception occurred during validation: {ve}")
@@ -81,7 +107,6 @@ def train(train_loader, val_loader, df_train, df_val, level=0):
 
     for split, df, loader in [("train", df_train, train_loader), ("val", df_val, val_loader)]:
         model.eval()
-        print(f"Generating semantic maps for {split} dataset...")
         with torch.no_grad():
             semantic_maps = []
             for batch in tqdm(loader):
