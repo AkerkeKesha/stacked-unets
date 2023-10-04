@@ -170,13 +170,21 @@ def visualize_prediction(image_indices, df, n_levels=1,
 
         for level in range(n_levels):
             pred_image = get_image_name_from_path(df_row[image_cols[0]]) if dataset == "etci" else df_row["image_id"]
-            prediction_path = f"{output_dir}/{dataset}_labels/" \
+            if config.output_type == "semantic_map":
+                prediction_path = f"{output_dir}/{dataset}_labels/" \
                               f"semantic_map_level_{level}_image_{pred_image}.png"
+            elif config.output_type == "softmax_prob":
+                prob_path = f"{config.labels_dir}/softmax_prob_level_{level}_image_{pred_image}.npy"
+                prob = np.load(prob_path)
+                scaled_probs = np.round(255 * prob).astype(np.uint8)
+                prediction_path = f"{output_dir}/{dataset}_labels/" \
+                                  f"pred_mask_level_{level}_image_{pred_image}.png"
+                cv2.imwrite(prediction_path, scaled_probs)
+
+            prediction = cv2.imread(prediction_path, 0) / 255.0
 
             if not os.path.exists(prediction_path):
                 raise FileNotFoundError(f"File does not exist: {prediction_path}")
-
-            prediction = cv2.imread(prediction_path, 0) / 255.0
             if prediction is None:
                 raise FileNotFoundError(f"Unable to load the image: {pred_image}")
             display_data(axes[level+len(titles), image_position], prediction, f"Level {level}", dataset, 'image')
@@ -252,7 +260,7 @@ def store_softmax_probs(df: pd.DataFrame, level: int, softmax_probs: List):
 
 def build_sn6_dataframe(split, mode="SAR-Intensity"):
     image_ids, image_paths, mask_paths = [], [], []
-    semantic_map_paths = []
+    semantic_map_paths, softmax_prob_paths = [], []
     if split == "train":
         summary_df = pd.read_csv(config.sn6_summary_datapath)
         image_ids = summary_df.ImageId.unique()
@@ -262,6 +270,7 @@ def build_sn6_dataframe(split, mode="SAR-Intensity"):
             mask_path = f'{config.mask_train_dir}/SN6_Train_AOI_11_Rotterdam_{mode}_{image_id}.png'
             mask_paths.append(mask_path)
             semantic_map_paths.append("")
+            softmax_prob_paths.append("")
     elif split == "test":
         image_ids = get_sn6_test_image_ids(test_dir=config.test_dir)
         for image_id in image_ids:
@@ -273,6 +282,7 @@ def build_sn6_dataframe(split, mode="SAR-Intensity"):
         "image_path": image_paths,
         "mask_path": mask_paths,
         "semantic_map_prev_level": semantic_map_paths,
+        "softmax_prob_prev_level": softmax_prob_paths,
     }
     return pd.DataFrame(paths)
 
