@@ -38,5 +38,5 @@ num_workers = 1 if environment == "local" else 2
 batch_size = 16 if dataset == "sn6" else 48
 
 # training related
-learning_rate = 1e-3
-num_epochs = 50 if dataset == "sn6" else 20
+learning_rate = 0.01 if dataset == "sn6" else 1e-3
+num_epochs = 30 if dataset == "sn6" else 20
