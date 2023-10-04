@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import rasterio
 from torch.utils.data import Dataset
-from numpy import pad
 
 import config
 
@@ -71,14 +70,24 @@ class SN6Dataset(Dataset):
             sar_image = src.read()
         sar_image /= 255.0
         sar_image = np.transpose(sar_image, (1, 2, 0))
-
-        semantic_map_path = df_row["semantic_map_prev_level"]
-        if semantic_map_path:
-            semantic_map = cv2.imread(semantic_map_path, 0) / 255.0
-            input_image = np.dstack((sar_image, semantic_map))
+        if config.output_type == "semantic_map":
+            semantic_map_path = df_row["semantic_map_prev_level"]
+            if semantic_map_path:
+                semantic_map = cv2.imread(semantic_map_path, 0) / 255.0
+                input_image = np.dstack((sar_image, semantic_map))
+            else:
+                dummy_channel = np.zeros_like(sar_image[:, :, 0])
+                input_image = np.dstack((sar_image, dummy_channel))
+        elif config.output_type == "softmax_prob":
+            softmax_prob_path = df_row[f"softmax_prob_prev_level"]
+            if softmax_prob_path:
+                softmax_prob = np.load(softmax_prob_path)
+                input_image = np.dstack((sar_image, softmax_prob))
+            else:
+                dummy_channel = np.zeros_like(sar_image[:, :, 0])
+                input_image = np.dstack((sar_image, dummy_channel))
         else:
-            dummy_channel = np.zeros_like(sar_image[:, :, 0])
-            input_image = np.dstack((sar_image, dummy_channel))
+            raise ValueError("Invalid output type to build one of input channels")
 
         mask = cv2.imread(mask_path, 0) / 255.0
 
