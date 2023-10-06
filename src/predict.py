@@ -10,13 +10,13 @@ import config
 
 def predict(test_loader, df_test, level=0):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = UNet(in_channels=5) if config.dataset == "sn6" else UNet()
+    model = UNet(in_channels=config.num_channels)
     model.load_state_dict(torch.load(f"{config.output_dir}/level{level}_unet_{config.dataset}.pt"))
     model.to(device)
     model.eval()
 
-    sum_mean = torch.zeros([3], dtype=torch.float32).to(device)
-    sum_std = torch.zeros([3], dtype=torch.float32).to(device)
+    sum_mean = torch.zeros([config.num_channels], dtype=torch.float32).to(device)
+    sum_std = torch.zeros([config.num_channels], dtype=torch.float32).to(device)
 
     final_predictions, true_labels = [], []
     iou_metric = IntersectionOverUnion(num_classes=2)
@@ -59,6 +59,7 @@ def predict(test_loader, df_test, level=0):
 
     except Exception as te:
         print(f"An exception occurred during inference: {te}")
+        raise Exception
     mean_iou = iou_metric.mean_iou()
     print(f"Mean IoU for the test dataset: {mean_iou}")
     overall_avg_entropy = np.mean(entropy_values)
