@@ -62,8 +62,8 @@ def train(train_loader, val_loader, df_train, df_val, level=0):
             print(f"Epoch: [{epoch + 1} / {num_epochs}]")
             print(f"Train mean IoU = {mean_iou:.4f}")
             print(f"Train mean loss = {training_loss:.4f}")
-            print(f"Avg Input Feature Mean: {avg_mean.cpu().numpy()}")
-            print(f"Avg Input Feature Std: {avg_std.cpu().numpy()}")
+            print(f"Input Feature Mean in train: {avg_mean.cpu().numpy()}")
+            print(f"Input Feature Std in train: {avg_std.cpu().numpy()}")
 
         model.eval()
         iou_metric = IntersectionOverUnion(num_classes=2)
@@ -98,8 +98,8 @@ def train(train_loader, val_loader, df_train, df_val, level=0):
                 if (epoch + 1) % 10 == 0:
                     print(f"Val mean IoU = {mean_iou:.4f}")
                     print(f"Val mean loss = {val_loss:.4f}")
-                    print(f"Avg Input Feature Mean: {avg_mean.cpu().numpy()}")
-                    print(f"Avg Input Feature Std: {avg_std.cpu().numpy()}")
+                    print(f"Input Feature Mean in val: {avg_mean.cpu().numpy()}")
+                    print(f"Input Feature Std in val: {avg_std.cpu().numpy()}")
 
         except Exception as ve:
             print(f"An exception occurred during validation: {ve}")
