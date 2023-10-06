@@ -13,6 +13,7 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 dataset = os.getenv("DATASET", "etci")
+num_channels = 3 if dataset == "etci" else 5
 labels_dir = f"{output_dir}/{dataset}_labels"
 mask_train_dir = None
 sn6_summary_datapath = None
@@ -38,7 +39,7 @@ num_workers = 1 if environment == "local" else 2
 batch_size = 16 if dataset == "sn6" else 48
 
 # training related
-learning_rate = 0.01 if dataset == "sn6" else 1e-3
+learning_rate = 1e-2 if dataset == "sn6" else 1e-3
 num_epochs = 20
 
 # input feature mean/std for normalization
