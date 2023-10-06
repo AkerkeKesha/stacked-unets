@@ -28,18 +28,18 @@ class ETCIDataset(Dataset):
             semantic_map_path = df_row[f"semantic_map_prev_level"]
             if semantic_map_path:
                 semantic_map = cv2.imread(semantic_map_path, 0) / 255.0
-                input_image = np.dstack((vv_image_normalized, vh_image_normalized, semantic_map))
+                input_image = np.dstack((vv_image, vh_image, semantic_map))
             else:
                 dummy_channel = np.zeros_like(vv_image)
-                input_image = np.dstack((vv_image_normalized, vh_image_normalized, dummy_channel))
+                input_image = np.dstack((vv_image, vh_image, dummy_channel))
         elif config.output_type == "softmax_prob":
             softmax_prob_path = df_row[f"softmax_prob_prev_level"]
             if softmax_prob_path:
                 softmax_prob = np.load(softmax_prob_path)
-                input_image = np.dstack((vv_image_normalized, vh_image_normalized, softmax_prob))
+                input_image = np.dstack((vv_image, vh_image, softmax_prob))
             else:
                 dummy_channel = np.zeros_like(vv_image)
-                input_image = np.dstack((vv_image_normalized, vh_image_normalized, dummy_channel))
+                input_image = np.dstack((vv_image, vh_image, dummy_channel))
         else:
             raise ValueError("Invalid output type to build one of input channels")
 
