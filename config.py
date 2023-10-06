@@ -39,8 +39,16 @@ batch_size = 16 if dataset == "sn6" else 48
 
 # training related
 learning_rate = 0.01 if dataset == "sn6" else 1e-3
-num_epochs = 30 if dataset == "sn6" else 20
+num_epochs = 20
 
 # input feature mean/std for normalization
 mean_vv, mean_vh = 0.5613525, 0.7112
 std_vv, std_vh = 0.1878580, 0.2009
+
+# if output_type == "semantic_map" and dataset == "sn6" :
+# sem_map_mean =
+# elif
+# sem_map_std =  if dataset == "sn6" else
+#
+# softmax_prob_mean = if dataset == "sn6" else
+# softmax_prob_std = if dataset == "sn6" else
