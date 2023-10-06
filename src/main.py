@@ -155,9 +155,9 @@ def run_experiments(runs=3, n_levels=1, max_data_points=None):
         std_val_loss = np.std(all_val_losses[level])
 
         print(f"Level: {level + 1}")
-        print(f"Mean IoU: {mean_iou:.2f}, Std Dev IoU: {std_iou:.2f}")
-        print(f"Mean Train Loss: {mean_train_loss:.2f}, Std Dev Train Loss: {std_train_loss:.2f}")
-        print(f"Mean Validation Loss: {mean_val_loss:.2f}, Std Dev Validation Loss: {std_val_loss:.2f}")
+        print(f"Mean IoU: {mean_iou:.2f} +/- {std_iou:.2f}")
+        print(f"Mean Train Loss: {mean_train_loss:.2f} +/- {std_train_loss:.2f}")
+        print(f"Mean Validation Loss: {mean_val_loss:.2f}  +/- {std_val_loss:.2f}")
 
         np.save(f'{config.output_dir}/mean_iou_level{level}_{config.dataset}.npy', mean_iou)
         np.save(f'{config.output_dir}/std_iou_level{level}_{config.dataset}.npy', std_iou)
