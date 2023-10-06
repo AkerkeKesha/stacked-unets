@@ -10,7 +10,7 @@ from evaluate import IntersectionOverUnion
 
 def train(train_loader, val_loader, df_train, df_val, level=0):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = UNet(in_channels=5) if config.dataset == "sn6" else UNet()
+    model = UNet(in_channels=config.num_channels)
     model.to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
@@ -24,8 +24,8 @@ def train(train_loader, val_loader, df_train, df_val, level=0):
     for epoch in range(num_epochs):
         model.train()
         training_loss = 0
-        sum_mean = torch.zeros([3], dtype=torch.float32).to(device)
-        sum_std = torch.zeros([3], dtype=torch.float32).to(device)
+        sum_mean = torch.zeros([config.num_channels], dtype=torch.float32).to(device)
+        sum_std = torch.zeros([config.num_channels], dtype=torch.float32).to(device)
         iou_metric = IntersectionOverUnion(num_classes=2)
         try:
             for batch in tqdm(train_loader):
@@ -68,8 +68,8 @@ def train(train_loader, val_loader, df_train, df_val, level=0):
         model.eval()
         iou_metric = IntersectionOverUnion(num_classes=2)
         val_loss = 0
-        sum_mean = torch.zeros([3], dtype=torch.float32).to(device)
-        sum_std = torch.zeros([3], dtype=torch.float32).to(device)
+        sum_mean = torch.zeros([config.num_channels], dtype=torch.float32).to(device)
+        sum_std = torch.zeros([config.num_channels], dtype=torch.float32).to(device)
         try:
             with torch.no_grad():
                 for batch in tqdm(val_loader):
@@ -103,7 +103,7 @@ def train(train_loader, val_loader, df_train, df_val, level=0):
 
         except Exception as ve:
             print(f"An exception occurred during validation: {ve}")
-            continue
+            break
 
     for split, df, loader in [("train", df_train, train_loader), ("val", df_val, val_loader)]:
         model.eval()
