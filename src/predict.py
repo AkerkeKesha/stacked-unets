@@ -51,8 +51,8 @@ def predict(test_loader, df_test, level=0):
                     final_predictions.append(class_label.astype("uint8"))
                     semantic_maps.append(class_label.squeeze())
 
-            avg_mean = sum_mean / len(test_loader.dataset)
-            avg_std = sum_std / len(test_loader.dataset)
+            avg_mean = sum_mean / len(test_loader)
+            avg_std = sum_std / len(test_loader)
 
             print(f"Avg Input Feature Mean in Test: {avg_mean.cpu().numpy()}")
             print(f"Avg Input Feature Std in Test: {avg_std.cpu().numpy()}")

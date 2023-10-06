@@ -92,8 +92,8 @@ def train(train_loader, val_loader, df_train, df_val, level=0):
                 val_loss = val_loss / len(val_loader)
                 val_losses.append(val_loss)
 
-                avg_mean = sum_mean / len(train_loader)
-                avg_std = sum_std / len(train_loader)
+                avg_mean = sum_mean / len(val_loader)
+                avg_std = sum_std / len(val_loader)
 
                 if (epoch + 1) % 10 == 0:
                     print(f"Val mean IoU = {mean_iou:.4f}")
