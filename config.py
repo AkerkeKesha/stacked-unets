@@ -43,13 +43,22 @@ learning_rate = 1e-2 if dataset == "sn6" else 1e-3
 num_epochs = 20
 
 # input feature mean/std for normalization
-mean_vv, mean_vh = 0.5613525, 0.7112
-std_vv, std_vh = 0.1878580, 0.2009
+mean_vv, mean_vh = 0.0031, 0.0055
+std_vv, std_vh = 0.9161, 0.9125
 
-# if output_type == "semantic_map" and dataset == "sn6" :
-# sem_map_mean =
-# elif
-# sem_map_std =  if dataset == "sn6" else
-#
-# softmax_prob_mean = if dataset == "sn6" else
-# softmax_prob_std = if dataset == "sn6" else
+mean_sar_image, std_sar_image = 0.0, 0.0  # change
+
+if output_type == "semantic_map":
+    if dataset == "sn6":
+        mean_sem_map = 1.0
+        std_sem_map = 0.0
+    elif dataset == "etci":
+        mean_sem_map = 1.0
+        std_sem_map = 0.0
+elif output_type == "softmax_prob":
+    if dataset == "sn6":
+        mean_softmax_prob = 0.0241  # change
+        std_softmax_prob = 0.1044   # change
+    elif dataset == "etci":
+        mean_softmax_prob = 0.0241
+        std_softmax_prob = 0.1044
