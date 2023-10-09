@@ -22,6 +22,7 @@ def predict(test_loader, df_test, level=0):
     iou_metric = IntersectionOverUnion(num_classes=2)
     semantic_maps, entropy_values = [], []
     collected_softmax_probs = []
+    total_images = 0
     try:
         with torch.no_grad():
             for i, batch in enumerate(tqdm(test_loader)):
@@ -29,10 +30,11 @@ def predict(test_loader, df_test, level=0):
                 for image, true_mask in zip(batch["image"], true_masks):
                     image = image.unsqueeze(0).to(device)  # add batch dimension because model expects it
 
-                    batch_mean = torch.mean(image, dim=[0, 2, 3])
-                    batch_std = torch.std(image, dim=[0, 2, 3])
-                    sum_mean += batch_mean
-                    sum_std += batch_std
+                    image_mean = torch.mean(image, dim=[0, 2, 3])
+                    image_std = torch.std(image, dim=[0, 2, 3])
+                    sum_mean += image_mean
+                    sum_std += image_std
+                    total_images += 1
 
                     pred = model(image)
 
@@ -51,8 +53,8 @@ def predict(test_loader, df_test, level=0):
                     final_predictions.append(class_label.astype("uint8"))
                     semantic_maps.append(class_label.squeeze())
 
-            avg_mean = sum_mean / len(test_loader)
-            avg_std = sum_std / len(test_loader)
+            avg_mean = sum_mean / total_images
+            avg_std = sum_std / total_images
 
             print(f"Input Feature Mean in Test: {avg_mean.cpu().numpy()}")
             print(f"Input Feature Std in Test: {avg_std.cpu().numpy()}")
