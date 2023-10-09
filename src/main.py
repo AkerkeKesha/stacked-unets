@@ -1,5 +1,6 @@
 import time
 import numpy as np
+import pickle
 import matplotlib.pyplot as plt
 import config
 from train import train
@@ -18,29 +19,37 @@ def load_data(dataset, max_data_points=None):
     return original_df, train_df, val_df, test_df, train_loader, val_loader, test_loader
 
 
-def save_metrics(train_iou, train_losses, val_iou, val_losses, level):
-    metrics = ["train_losses", "val_losses", "train_iou", "val_iou"]
-    new_values = [train_losses, val_losses, train_iou, val_iou]
-    for metric, new_value in zip(metrics, new_values):
-        metric_file = f'{config.output_dir}/{metric}_level{level}_{config.dataset}.npy'
-        np.save(metric_file, new_value)
-    print(f"Done saving evaluation metrics/losses on train/val")
+def plot_metric_with_error(metric_name, metrics, level):
+    runs_data = [metrics[metric_name][run][level] for run in metrics[metric_name]]
+    mean_values = np.mean(runs_data, axis=0)
+    std_values = np.std(runs_data, axis=0)
+    plt.errorbar(range(len(mean_values)), mean_values, yerr=std_values, capsize=5, marker='o')
+    plt.title(f'Average {metric_name} for level {level} (± std)')
+    plt.xlabel('Epoch')
+    plt.ylabel(metric_name)
+    plt.show()
 
 
-def plot_metrics_per_level(metric_names, metric_labels, plot_filename, level):
-    assert len(metric_names) == len(metric_labels), "Mismatch in number of metrics and labels."
-    plt.figure(figsize=(10, 6))
-    for metric_name, metric_label in zip(metric_names, metric_labels):
-        metric_file = f'{config.output_dir}/{metric_name}_level{level}_{config.dataset}.npy'
-        metric_values = np.load(metric_file)
-        epochs = range(1, len(metric_values) + 1)
-        plt.plot(epochs, metric_values, label=f"{metric_label}")
+def plot_level_metrics(metrics, metric_name):
+    runs = list(metrics[metric_name].keys())
+    levels = list(metrics[metric_name][runs[0]].keys())
 
-    plt.xlabel("Epoch")
-    plt.title(f"Metrics for level {level}")
-    plt.legend()
+    mean_values = []
+    std_values = []
 
-    plt.savefig(f'{config.output_dir}/{plot_filename}_level{level}_{config.dataset}.png', bbox_inches='tight')
+    for level in levels:
+        all_runs_values = [metrics[metric_name][run][level] for run in runs]
+        mean_value = np.mean(all_runs_values)
+        std_value = np.std(all_runs_values)
+
+        mean_values.append(mean_value)
+        std_values.append(std_value)
+
+    plt.errorbar(range(len(levels)), mean_values, yerr=std_values, capsize=5, marker='o')
+    plt.xlabel('Level')
+    plt.ylabel(metric_name)
+    plt.title(f'{metric_name} per Level')
+    plt.xticks(range(len(levels)), labels=levels)
     plt.show()
 
 
@@ -50,118 +59,94 @@ def visualize_examples(df, n_samples=5, n_levels=1):
     visualize_prediction(image_indices=random_indices, df=df, n_levels=n_levels, dataset=config.dataset)
 
 
-def start_stacked_unet(n_levels, max_data_points, run,
-                       all_test_mean_ious,
-                       all_train_losses,
-                       all_val_losses):
+def start_stacked_unet(n_levels, max_data_points, run_key, metrics):
+    for metric_name in metrics.keys():
+        if run_key not in metrics[metric_name]:
+            metrics[metric_name][run_key] = {}
+
     original_df, train_df, val_df, test_df, train_loader, val_loader, test_loader \
         = load_data(config.dataset, max_data_points=max_data_points)
-    test_mean_ious, average_entropies = [], []
-    timings = []
+
     for level in range(n_levels):
         print(f"Level: [{level + 1} / {n_levels}]")
+        level_key = f"level_{level}"
+
         start = time.time()
         train_losses, val_losses, train_iou, val_iou, train_df, val_df \
             = train(train_loader, val_loader, train_df, val_df, level=level)
-        timings.append(time.time() - start)
-        print(f"Takes {time.time() - start} seconds to train in level{level + 1}")
-        save_metrics(train_iou, train_losses, val_iou, val_losses, level=level)
+        timing = time.time() - start
+        print(f"Takes {timing} seconds to train in level{level + 1}")
         final_predictions, test_df, mean_iou, avg_entropy = predict(test_loader, test_df, level=level)
-        test_mean_ious.append(mean_iou)
-        average_entropies.append(avg_entropy)
 
-        if level not in all_test_mean_ious:
-            all_test_mean_ious[level] = []
-        if level not in all_train_losses:
-            all_train_losses[level] = []
-        if level not in all_val_losses:
-            all_val_losses[level] = []
+        for metric_name, metric_value in [('train_loss', train_losses),
+                                          ('val_loss', val_losses),
+                                          ('test_iou', mean_iou),
+                                          ('train_iou', train_iou ),
+                                          ('val_iou', val_iou),
+                                          ('timing', timing),
+                                          ('entropy', avg_entropy),
+                                          ]:
+            if level_key not in metrics[metric_name][run_key]:
+                metrics[metric_name][run_key][level_key] = []
+            metrics[metric_name][run_key][level_key].append(metric_value)
 
-        all_test_mean_ious[level].append(mean_iou)
-        all_train_losses[level].append(train_losses)
-        all_val_losses[level].append(val_losses)
+    np.save(f'{config.output_dir}/test_df_{run_key}.npy', test_df.to_dict(), allow_pickle=True)
+    with open(f'{config.output_dir}/metrics.pkl', 'wb') as f:
+        pickle.dump(metrics, f)
 
-    np.save(f'{config.output_dir}/mean_iou_run{run}_{config.dataset}.npy', np.array(test_mean_ious))
-    np.save(f'{config.output_dir}/timings_run{run}_{config.dataset}.npy', np.array(timings))
-    np.save(f'{config.output_dir}/mean_entropy_run{run}_{config.dataset}.npy', np.array(average_entropies))
-    np.save(f'{config.output_dir}/test_df_run{run}.npy', test_df.to_dict(), allow_pickle=True)
+    for level_key in metrics['train_loss'][run_key].keys():
+        for metric_name in ['train_loss', 'val_loss', 'train_iou', 'val_iou']:
+            plot_metric_with_error(metric_name, metrics, level_key)
 
-    show_results(n_levels=n_levels, run=run)
-    visualize_examples(test_df, n_samples=5, n_levels=n_levels)
+    for metric_name in ['test_iou', 'timing', 'entropy']:
+        plot_level_metrics(metrics, metric_name)
 
-
-def show_results(n_levels, run):
-    for level in range(n_levels):
-        plot_metrics_per_level(['train_losses', 'val_losses'],
-                               ['Training Loss', 'Validation Loss'],
-                               'loss_plot', level)
-        plot_metrics_per_level(['train_iou', 'val_iou'],
-                               ['Training Mean IoU', 'Validation Mean IoU'],
-                               'iou_plot', level)
-
-    mean_iou_levels = np.load(f'{config.output_dir}/mean_iou_run{run}_{config.dataset}.npy')
-    timing_levels = np.load(f'{config.output_dir}/timings_run{run}_{config.dataset}.npy')
-
-    # Plotting mean IoUs
-    plt.figure(figsize=(10, 6))
-    levels = range(n_levels)
-    plt.plot(levels, mean_iou_levels, marker='o')
-    # plt.errorbar(range(n_levels), mean_iou_levels, yerr=std_iou_levels, capsize=5, marker='o', label='Mean IoU')
-    plt.xlabel("Level")
-    plt.ylabel("Mean IoU")
-    plt.title("Mean IoU per Level")
-    plt.xticks(levels)
-    plt.savefig(f'{config.output_dir}/mean_iou_plot_{config.dataset}.png', bbox_inches='tight')
-    plt.show()
-
-    # Plotting timing levels
-    plt.figure(figsize=(10, 6))
-    plt.plot(levels, timing_levels, marker='o')
-    plt.xlabel("Level")
-    plt.ylabel("Time (seconds)")
-    plt.title("Timing per Level")
-    plt.xticks(levels)
-    plt.savefig(f'{config.output_dir}/timing_plot_{config.dataset}.png', bbox_inches='tight')
-    plt.show()
-
-    # Plotting average entropies
-    print("Done plotting results")
+    # visualize_examples(test_df, n_samples=5, n_levels=n_levels)
 
 
 def run_experiments(runs=3, n_levels=1, max_data_points=None):
-    all_test_mean_ious = {}
-    all_train_losses = {}
-    all_val_losses = {}
+    metrics = {
+        'train_loss': {},
+        'val_loss': {},
+        'train_iou': {},
+        'val_iou': {},
+        'test_iou': {},
+        'timing': {},
+        'entropy': {},
+    }
     for run in range(runs):
         print(f"Run: [{run + 1} / {runs}]")
-        start_stacked_unet(n_levels, max_data_points, run,
-                           all_test_mean_ious,
-                           all_train_losses,
-                           all_val_losses)
+        run_key = f"run{run}"
+        start_stacked_unet(n_levels, max_data_points, run_key, metrics)
+
+    with open(f'{config.output_dir}/metrics.pkl', 'rb') as f:
+        metrics = pickle.load(f)
 
     for level in range(n_levels):
-        mean_iou = np.mean(all_test_mean_ious[level])
-        std_iou = np.std(all_test_mean_ious[level])
+        level_key = f'level{level}'
 
-        mean_train_loss = np.mean(all_train_losses[level])
-        std_train_loss = np.std(all_train_losses[level])
+        mean_iou = np.mean([metrics['test_iou'][run_key][level_key] for run_key in metrics['test_iou']])
+        std_iou = np.std([metrics['test_iou'][run_key][level_key] for run_key in metrics['test_iou']])
 
-        mean_val_loss = np.mean(all_val_losses[level])
-        std_val_loss = np.std(all_val_losses[level])
+        mean_train_loss = np.mean([metrics['train_loss'][run_key][level_key] for run_key in metrics['train_loss']])
+        std_train_loss = np.std([metrics['train_loss'][run_key][level_key] for run_key in metrics['train_loss']])
+
+        mean_val_loss = np.mean([metrics['val_loss'][run_key][level_key] for run_key in metrics['val_loss']])
+        std_val_loss = np.std([metrics['val_loss'][run_key][level_key] for run_key in metrics['val_loss']])
+
+        mean_train_iou = np.mean([metrics['train_iou'][run_key][level_key] for run_key in metrics['train_iou']])
+        std_train_iou = np.std([metrics['train_iou'][run_key][level_key] for run_key in metrics['train_iou']])
+
+        mean_val_iou = np.mean([metrics['val_iou'][run_key][level_key] for run_key in metrics['val_iou']])
+        std_val_iou = np.std([metrics['val_iou'][run_key][level_key] for run_key in metrics['val_iou']])
 
         print(f"Level: {level + 1}")
         print(f"Mean IoU: {mean_iou:.2f} +/- {std_iou:.2f}")
         print(f"Mean Train Loss: {mean_train_loss:.2f} +/- {std_train_loss:.2f}")
         print(f"Mean Validation Loss: {mean_val_loss:.2f}  +/- {std_val_loss:.2f}")
+        print(f"Mean Train IoU: {mean_train_iou:.2f} +/- {std_train_iou:.2f}")
+        print(f"Mean Validation IoU: {mean_val_iou:.2f}  +/- {std_val_iou:.2f}")
 
-        np.save(f'{config.output_dir}/mean_iou_level{level}_{config.dataset}.npy', mean_iou)
-        np.save(f'{config.output_dir}/std_iou_level{level}_{config.dataset}.npy', std_iou)
-
-        np.save(f'{config.output_dir}/mean_train_loss_level{level}_{config.dataset}.npy', mean_train_loss)
-        np.save(f'{config.output_dir}/std_train_loss_level{level}_{config.dataset}.npy', std_train_loss)
-
-        np.save(f'{config.output_dir}/mean_val_loss_level{level}_{config.dataset}.npy', mean_val_loss)
-        np.save(f'{config.output_dir}/std_val_loss_level{level}_{config.dataset}.npy', std_val_loss)
 
 
 
