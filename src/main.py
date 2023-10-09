@@ -23,6 +23,9 @@ def plot_metric_with_error(metric_name, metrics, level):
     runs_data = [metrics[metric_name][run][level] for run in metrics[metric_name]]
     mean_values = np.mean(runs_data, axis=0)
     std_values = np.std(runs_data, axis=0)
+    mean_values = mean_values.flatten()
+    std_values = std_values.flatten()
+
     plt.errorbar(range(len(mean_values)), mean_values, yerr=std_values, capsize=5, marker='o')
     plt.title(f'Average {metric_name} for level {level} (± std)')
     plt.xlabel('Epoch')
@@ -81,7 +84,7 @@ def start_stacked_unet(n_levels, max_data_points, run_key, metrics):
         for metric_name, metric_value in [('train_loss', train_losses),
                                           ('val_loss', val_losses),
                                           ('test_iou', mean_iou),
-                                          ('train_iou', train_iou ),
+                                          ('train_iou', train_iou),
                                           ('val_iou', val_iou),
                                           ('timing', timing),
                                           ('entropy', avg_entropy),
