@@ -70,14 +70,12 @@ def start_stacked_unet(n_levels, max_data_points, run_key, metrics):
     for level in range(n_levels):
         print(f"Level: [{level + 1} / {n_levels}]")
         level_key = f"level{level}"
-
         start = time.time()
         train_losses, val_losses, train_iou, val_iou, train_df, val_df \
             = train(train_loader, val_loader, train_df, val_df, level=level)
         timing = time.time() - start
         print(f"Takes {timing} seconds to train in level{level + 1}")
         final_predictions, test_df, mean_iou, avg_entropy = predict(test_loader, test_df, level=level)
-
         metrics_matching = {
             'train_loss': train_losses,
             'val_loss': val_losses,
@@ -87,8 +85,7 @@ def start_stacked_unet(n_levels, max_data_points, run_key, metrics):
             'timing': timing,
             'entropy': avg_entropy,
         }
-        for metric_name, metric_value in metrics_matching.items():
-            update_metrics(metrics, metric_name, run_key, level_key, metric_value)
+        update_metrics(metrics, config.metrics, run_key, level_key, metrics_matching)
 
     np.save(f'{config.output_dir}/test_df_{run_key}.npy', test_df.to_dict(), allow_pickle=True)
     with open(f'{config.output_dir}/metrics.pkl', 'wb') as f:
@@ -102,8 +99,7 @@ def initialize_metrics(metric_names):
     return metrics
 
 
-def update_metrics(metrics, metric_names, run_key, level, computed_metrics):
-    level_key = f"level{level}"
+def update_metrics(metrics, metric_names, run_key, level_key, computed_metrics):
     for metric_name in metric_names:
         if metric_name in computed_metrics:
             metrics[metric_name][run_key][level_key].append(computed_metrics[metric_name])
