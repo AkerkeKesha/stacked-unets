@@ -69,10 +69,6 @@ def start_stacked_unet(n_levels, max_data_points, run,
         final_predictions, test_df, mean_iou, avg_entropy = predict(test_loader, test_df, level=level)
         test_mean_ious.append(mean_iou)
         average_entropies.append(avg_entropy)
-        np.save(f'{config.output_dir}/predictions_{config.dataset}_run{run}_level{level}.npy',
-                final_predictions,
-                fix_imports=True,
-                allow_pickle=False)
 
         if level not in all_test_mean_ious:
             all_test_mean_ious[level] = []
@@ -81,13 +77,9 @@ def start_stacked_unet(n_levels, max_data_points, run,
         if level not in all_val_losses:
             all_val_losses[level] = []
 
-        all_test_mean_ious[level].append(test_mean_ious)
+        all_test_mean_ious[level].append(mean_iou)
         all_train_losses[level].append(train_losses)
         all_val_losses[level].append(val_losses)
-
-        np.save(f'{config.output_dir}/test_mean_iou_run{run}_level{level}_{config.dataset}.npy', mean_iou)
-        np.save(f'{config.output_dir}/train_losses_run{run}_level{level}_{config.dataset}.npy', train_losses)
-        np.save(f'{config.output_dir}/val_losses_run{run}_level{level}_{config.dataset}.npy', val_losses)
 
     np.save(f'{config.output_dir}/mean_iou_run{run}_{config.dataset}.npy', np.array(test_mean_ious))
     np.save(f'{config.output_dir}/timings_run{run}_{config.dataset}.npy', np.array(timings))
@@ -114,6 +106,7 @@ def show_results(n_levels, run):
     plt.figure(figsize=(10, 6))
     levels = range(n_levels)
     plt.plot(levels, mean_iou_levels, marker='o')
+    # plt.errorbar(range(n_levels), mean_iou_levels, yerr=std_iou_levels, capsize=5, marker='o', label='Mean IoU')
     plt.xlabel("Level")
     plt.ylabel("Mean IoU")
     plt.title("Mean IoU per Level")
@@ -130,6 +123,8 @@ def show_results(n_levels, run):
     plt.xticks(levels)
     plt.savefig(f'{config.output_dir}/timing_plot_{config.dataset}.png', bbox_inches='tight')
     plt.show()
+
+    # Plotting average entropies
     print("Done plotting results")
 
 
