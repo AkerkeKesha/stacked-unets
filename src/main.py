@@ -88,8 +88,9 @@ def start_stacked_unet(n_levels, max_data_points, run_key, metrics):
         update_metrics(metrics, config.metrics, run_key, level_key, metrics_matching)
 
     np.save(f'{config.output_dir}/test_df_{run_key}.npy', test_df.to_dict(), allow_pickle=True)
+    metrics_regular_dict = convert_defaultdict_to_dict(metrics)
     with open(f'{config.output_dir}/metrics.pkl', 'wb') as f:
-        pickle.dump(metrics, f)
+        pickle.dump(metrics_regular_dict, f)
 
 
 def initialize_metrics(metric_names):
@@ -112,6 +113,12 @@ def calculate_stat(metric_dict, metric_name, level_key):
         std_value = np.std(values)
         return mean_value, std_value
     return None, None
+
+
+def convert_defaultdict_to_dict(d):
+    if isinstance(d, defaultdict):
+        d = {k: convert_defaultdict_to_dict(v) for k, v in d.items()}
+    return d
 
 
 def run_experiments(runs=3, n_levels=1, max_data_points=None):
