@@ -43,8 +43,8 @@ learning_rate = 1e-2 if dataset == "sn6" else 1e-3
 num_epochs = 20
 
 # input feature mean/std for normalization
-mean_vv, mean_vh = 0.0031, 0.0055
-std_vv, std_vh = 0.9161, 0.9125
+mean_vv, mean_vh = 0.56183946, 0.7116502
+std_vv, std_vh = 0.18815923, 0.20106803
 
 mean_sar_image, std_sar_image = 0.0, 0.0  # change
 
