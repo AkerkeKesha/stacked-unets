@@ -34,6 +34,8 @@ elif dataset == "sn6":
 stop = os.getenv("STOP", "no")
 output_type = os.getenv("OUTPUT_TYPE", "semantic_map")
 
+metrics = ["train_loss", "val_loss", "train_iou", "val_iou", "test_iou", "timing", "entropy"]
+
 # hyperparameters
 num_workers = 1 if environment == "local" else 2
 batch_size = 16 if dataset == "sn6" else 48
