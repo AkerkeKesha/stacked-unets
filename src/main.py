@@ -28,20 +28,19 @@ def plot_metric_with_error(metric_name, metrics, level):
     std_values = std_values.flatten()
 
     plt.errorbar(range(len(mean_values)), mean_values, yerr=std_values, capsize=5, marker='o')
-    plt.title(f'Average {metric_name} for level {level} (± std)')
+    plt.title(f'Average {metric_name} for level{level} (± std)')
     plt.xlabel('Epoch')
     plt.ylabel(metric_name)
     plt.show()
 
 
-def plot_level_metrics(metrics, metric_name):
+def plot_level_metrics(metrics, metric_name, n_levels):
     runs = list(metrics[metric_name].keys())
-    levels = list(metrics[metric_name][runs[0]].keys())
-
+    levels = range(n_levels)
     mean_values = []
     std_values = []
 
-    for level in levels:
+    for level in range(n_levels):
         all_runs_values = [metrics[metric_name][run][level] for run in runs]
         mean_value = np.mean(all_runs_values)
         std_value = np.std(all_runs_values)
@@ -49,11 +48,11 @@ def plot_level_metrics(metrics, metric_name):
         mean_values.append(mean_value)
         std_values.append(std_value)
 
-    plt.errorbar(range(len(levels)), mean_values, yerr=std_values, capsize=5, marker='o')
+    plt.errorbar(range(n_levels), mean_values, yerr=std_values, capsize=5, marker='o')
     plt.xlabel('Level')
     plt.ylabel(metric_name)
     plt.title(f'{metric_name} per Level')
-    plt.xticks(range(len(levels)), labels=levels)
+    plt.xticks(levels)
     plt.show()
 
 
@@ -132,13 +131,12 @@ def run_experiments(runs=3, n_levels=1, max_data_points=None):
 
     for metric_name in config.metrics:
         for level in range(n_levels):
-            level_key = f"level{level}"
             if metric_name in ['train_loss', 'val_loss', 'train_iou', 'val_iou']:
-                plot_metric_with_error(metric_name, metrics, level_key)
+                plot_metric_with_error(metric_name, metrics, level)
 
     for metric_name in config.metrics:
         if metric_name in ['test_iou', 'timing', 'entropy']:
-                plot_level_metrics(metrics, metric_name)
+                plot_level_metrics(metrics, metric_name, n_levels)
 
     # visualize_examples(test_df, n_samples=5, n_levels=n_levels)
 
