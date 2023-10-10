@@ -20,7 +20,7 @@ def load_data(dataset, max_data_points=None):
     return original_df, train_df, val_df, test_df, train_loader, val_loader, test_loader
 
 
-def plot_pair_metrics_with_error(metric_names, metrics, level, labels=None):
+def plot_pair_metrics_with_error(metric_names, metrics, level, labels=None, filename=None):
     level_key = f"level{level}"
     plt.figure(figsize=(10, 6))
 
@@ -42,6 +42,8 @@ def plot_pair_metrics_with_error(metric_names, metrics, level, labels=None):
     plt.title(f'Train/val metrics for level{level} (± std)')
     plt.xlabel('Epoch')
     plt.legend()
+    if filename:
+        plt.savefig(f'{filename}_level{level}_{config.dataset}.png', bbox_inches='tight')
     plt.show()
 
 
@@ -145,14 +147,13 @@ def run_experiments(runs=3, n_levels=1, max_data_points=None):
                 print(f"Mean {metric_name}: {mean_val:.2f} +/- {std_val:.2f}")
 
     for level in range(n_levels):
-            plot_pair_metrics_with_error(['train_loss', 'val_loss'], metrics, level,
-                                         labels=['Training Loss', 'Validation Loss'])
-            plot_pair_metrics_with_error(['train_iou', 'val_iou'], metrics, level,
-                                         labels=['Training IoU', 'Validation IoU'])
-
+        plot_pair_metrics_with_error(['train_loss', 'val_loss'], metrics, level,
+                                     labels=['train loss', 'validation loss'], filename='Loss')
+        plot_pair_metrics_with_error(['train_iou', 'val_iou'], metrics, level,
+                                     labels=['train IoU', 'validation IoU'], filename='IoU')
     for metric_name in config.metrics:
         if metric_name in ['test_iou', 'timing', 'entropy']:
-                plot_level_metrics(metrics, metric_name, n_levels)
+            plot_level_metrics(metrics, metric_name, n_levels)
 
     # visualize_examples(test_df, n_samples=5, n_levels=n_levels)
 
