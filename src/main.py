@@ -20,18 +20,27 @@ def load_data(dataset, max_data_points=None):
     return original_df, train_df, val_df, test_df, train_loader, val_loader, test_loader
 
 
-def plot_metric_with_error(metric_name, metrics, level):
+def plot_pair_metrics_with_error(metric_names, metrics, level, labels=None):
     level_key = f"level{level}"
-    runs_data = [metrics[metric_name][run][level_key] for run in metrics[metric_name]]
-    mean_values = np.mean(runs_data, axis=0)
-    std_values = np.std(runs_data, axis=0)
-    mean_values = mean_values.flatten()
-    std_values = std_values.flatten()
+    plt.figure(figsize=(10, 6))
 
-    plt.errorbar(range(len(mean_values)), mean_values, yerr=std_values, capsize=5, marker='o')
-    plt.title(f'Average {metric_name} for level{level} (± std)')
+    if not labels:
+        labels = metric_names
+    assert len(metric_names) == len(labels), "Mismatch in number of metrics and labels."
+
+    for metric_name, label in zip(metric_names, labels):
+        runs_data = [metrics[metric_name][run][level_key] for run in metrics[metric_name]]
+        mean_values = np.mean(runs_data, axis=0)
+        std_values = np.std(runs_data, axis=0)
+        mean_values = mean_values.flatten()
+        std_values = std_values.flatten()
+        epochs = range(1, len(mean_values) + 1)
+
+        plt.errorbar(epochs, mean_values, yerr=std_values, capsize=5, marker='o')
+
+    plt.title(f'Train/val metrics for level{level} (± std)')
     plt.xlabel('Epoch')
-    plt.ylabel(metric_name)
+    plt.legend()
     plt.show()
 
 
@@ -134,10 +143,11 @@ def run_experiments(runs=3, n_levels=1, max_data_points=None):
             if mean_val and std_val:
                 print(f"Mean {metric_name}: {mean_val:.2f} +/- {std_val:.2f}")
 
-    for metric_name in config.metrics:
-        for level in range(n_levels):
-            if metric_name in ['train_loss', 'val_loss', 'train_iou', 'val_iou']:
-                plot_metric_with_error(metric_name, metrics, level)
+    for level in range(n_levels):
+            plot_pair_metrics_with_error(['train_loss', 'val_loss'], metrics, level,
+                                         labels=['Training Loss', 'Validation Loss'])
+            plot_pair_metrics_with_error(['train_iou', 'val_iou'], metrics, level,
+                                         labels=['Training IoU', 'Validation IoU'])
 
     for metric_name in config.metrics:
         if metric_name in ['test_iou', 'timing', 'entropy']:
