@@ -21,7 +21,8 @@ def load_data(dataset, max_data_points=None):
 
 
 def plot_metric_with_error(metric_name, metrics, level):
-    runs_data = [metrics[metric_name][run][level] for run in metrics[metric_name]]
+    level_key = f"level{level}"
+    runs_data = [metrics[metric_name][run][level_key] for run in metrics[metric_name]]
     mean_values = np.mean(runs_data, axis=0)
     std_values = np.std(runs_data, axis=0)
     mean_values = mean_values.flatten()
@@ -41,7 +42,8 @@ def plot_level_metrics(metrics, metric_name, n_levels):
     std_values = []
 
     for level in range(n_levels):
-        all_runs_values = [metrics[metric_name][run][level] for run in runs]
+        level_key = f"level{level}"
+        all_runs_values = [metrics[metric_name][run][level_key] for run in runs]
         mean_value = np.mean(all_runs_values)
         std_value = np.std(all_runs_values)
 
