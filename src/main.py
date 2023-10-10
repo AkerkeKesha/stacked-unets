@@ -102,6 +102,8 @@ def initialize_metrics(metric_names):
 
 def update_metrics(metrics, metric_names, run_key, level_key, computed_metrics):
     for metric_name in metric_names:
+        if run_key not in metrics[metric_name]:
+            metrics[metric_name][run_key] = defaultdict(list)
         if metric_name in computed_metrics:
             metrics[metric_name][run_key][level_key].append(computed_metrics[metric_name])
 
