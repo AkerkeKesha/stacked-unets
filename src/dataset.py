@@ -36,7 +36,8 @@ class ETCIDataset(Dataset):
             softmax_prob_path = df_row[f"softmax_prob_prev_level"]
             if softmax_prob_path:
                 softmax_prob = np.load(softmax_prob_path)
-                input_image = np.dstack((vv_image_norm, vh_image_norm, softmax_prob))
+                softmax_prob_norm = normalize(softmax_prob, config.mean_softmax_prob, config.std_softmax_prob)
+                input_image = np.dstack((vv_image_norm, vh_image_norm, softmax_prob_norm))
             else:
                 dummy_channel = np.zeros_like(vv_image)
                 input_image = np.dstack((vv_image_norm, vh_image_norm, dummy_channel))

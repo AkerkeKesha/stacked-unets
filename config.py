@@ -62,5 +62,5 @@ elif output_type == "softmax_prob":
         mean_softmax_prob = 0.0241  # change
         std_softmax_prob = 0.1044   # change
     elif dataset == "etci":
-        mean_softmax_prob = 0.0241
-        std_softmax_prob = 0.1044
+        mean_softmax_prob = 0.0462399
+        std_softmax_prob = 0.13435808
