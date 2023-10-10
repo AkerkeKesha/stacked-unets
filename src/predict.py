@@ -8,10 +8,10 @@ from utils import store_semantic_maps, store_softmax_probs
 import config
 
 
-def predict(test_loader, df_test, level=0):
+def predict(test_loader, df_test, level, run_key):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = UNet(in_channels=config.num_channels)
-    model.load_state_dict(torch.load(f"{config.output_dir}/level{level}_unet_{config.dataset}.pt"))
+    model.load_state_dict(torch.load(f"{config.output_dir}/{run_key}_level{level}_unet_{config.dataset}.pt"))
     model.to(device)
     model.eval()
 
