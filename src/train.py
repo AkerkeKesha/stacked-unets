@@ -8,7 +8,7 @@ from utils import store_semantic_maps, store_softmax_probs
 from evaluate import IntersectionOverUnion
 
 
-def train(train_loader, val_loader, df_train, df_val, level=0):
+def train(train_loader, val_loader, df_train, df_val, level, run_key):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = UNet(in_channels=config.num_channels)
     model.to(device)
@@ -139,7 +139,7 @@ def train(train_loader, val_loader, df_train, df_val, level=0):
                 else:
                     raise ValueError("Invalid output type")
 
-    torch.save(model.state_dict(), f"{config.output_dir}/level{level}_unet_{config.dataset}.pt")
+    torch.save(model.state_dict(), f"{config.output_dir}/{run_key}_level{level}_unet_{config.dataset}.pt")
     return train_losses, val_losses, train_ious, val_ious, df_train, df_val
 
 
