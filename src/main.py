@@ -36,7 +36,8 @@ def plot_pair_metrics_with_error(metric_names, metrics, level, labels=None):
         std_values = std_values.flatten()
         epochs = range(1, len(mean_values) + 1)
 
-        plt.errorbar(epochs, mean_values, yerr=std_values, capsize=5, marker='o')
+        line = plt.errorbar(epochs, mean_values, yerr=std_values, capsize=5, marker='o')
+        line.set_label(f"{label}")
 
     plt.title(f'Train/val metrics for level{level} (± std)')
     plt.xlabel('Epoch')
