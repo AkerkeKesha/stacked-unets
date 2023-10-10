@@ -53,6 +53,7 @@ def plot_level_metrics(metrics, metric_name, n_levels):
     plt.ylabel(metric_name)
     plt.title(f'{metric_name} per Level')
     plt.xticks(levels)
+    plt.savefig(f'{metric_name.lower()}_{config.dataset}.png', bbox_inches='tight')
     plt.show()
 
 
@@ -71,10 +72,10 @@ def start_stacked_unet(n_levels, max_data_points, run_key, metrics):
         level_key = f"level{level}"
         start = time.time()
         train_losses, val_losses, train_iou, val_iou, train_df, val_df \
-            = train(train_loader, val_loader, train_df, val_df, level=level)
+            = train(train_loader, val_loader, train_df, val_df, level=level, run_key=run_key)
         timing = time.time() - start
         print(f"Takes {timing} seconds to train in level{level + 1}")
-        final_predictions, test_df, mean_iou, avg_entropy = predict(test_loader, test_df, level=level)
+        final_predictions, test_df, mean_iou, avg_entropy = predict(test_loader, test_df, level=level, run_key=run_key)
         metrics_matching = {
             'train_loss': train_losses,
             'val_loss': val_losses,
@@ -126,7 +127,7 @@ def run_experiments(runs=3, n_levels=1, max_data_points=None):
         level_key = f'level{level}'
         for metric_name in config.metrics:
             mean_val, std_val = calculate_stat(metrics, metric_name, level_key)
-            if mean_val is not None and std_val is not None:
+            if mean_val and std_val:
                 print(f"Mean {metric_name}: {mean_val:.2f} +/- {std_val:.2f}")
 
     for metric_name in config.metrics:
