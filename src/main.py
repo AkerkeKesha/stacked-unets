@@ -43,7 +43,7 @@ def plot_pair_metrics_with_error(metric_names, metrics, level, labels=None, file
     plt.xlabel('Epoch')
     plt.legend()
     if filename:
-        plt.savefig(f'{filename}_level{level}_{config.dataset}.png', bbox_inches='tight')
+        plt.savefig(f'{config.output_dir}/{filename}_level{level}_{config.dataset}.png', bbox_inches='tight')
     plt.show()
 
 
@@ -67,7 +67,7 @@ def plot_level_metrics(metrics, metric_name, n_levels):
     plt.ylabel(metric_name)
     plt.title(f'{metric_name} per Level')
     plt.xticks(levels)
-    plt.savefig(f'{metric_name.lower()}_{config.dataset}.png', bbox_inches='tight')
+    plt.savefig(f'{config.output_dir}/{metric_name.lower()}_{config.dataset}.png', bbox_inches='tight')
     plt.show()
 
 
