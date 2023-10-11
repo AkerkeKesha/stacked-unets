@@ -55,8 +55,8 @@ if output_type == "semantic_map":
         mean_sem_map = 1.0
         std_sem_map = 0.0
     elif dataset == "etci":
-        mean_sem_map = 1.0
-        std_sem_map = 0.0
+        mean_semantic_map = 0.03615002
+        std_semantic_map = 0.05179913
 elif output_type == "softmax_prob":
     if dataset == "sn6":
         mean_softmax_prob = 0.0241  # change

@@ -28,7 +28,8 @@ class ETCIDataset(Dataset):
             semantic_map_path = df_row[f"semantic_map_prev_level"]
             if semantic_map_path:
                 semantic_map = cv2.imread(semantic_map_path, 0) / 255.0
-                input_image = np.dstack((vv_image_norm, vh_image_norm, semantic_map))
+                semantic_map_norm = normalize(semantic_map, config.mean_semantic_map, config.std_semantic_map)
+                input_image = np.dstack((vv_image_norm, vh_image_norm, semantic_map_norm))
             else:
                 dummy_channel = np.zeros_like(vv_image)
                 input_image = np.dstack((vv_image_norm, vh_image_norm, dummy_channel))
