@@ -109,16 +109,6 @@ def plot_etci_image_and_masks(df_row, figure_size=(25, 15)):
         plt.title('Water body mask')
 
 
-def find_prediction_image(searched_value, df):
-    mask = df["semantic_map_prev_level"].str.endswith(searched_value)
-    indices = df.loc[mask].index
-    if len(indices) > 0:
-        return indices[0]
-    else:
-        print(f"No match found for {searched_value} in semantic_map_prev_level column")
-        return None
-
-
 def load_images(df_row, dataset):
     if dataset == 'etci':
         vv_image = cv2.imread(df_row['vv_image_path'], 0) / 255.0
@@ -236,6 +226,16 @@ def get_image_name_from_semantic_path(image_path: str):
     return image_name
 
 
+def find_prediction_image(searched_value, df):
+    mask = df["semantic_map_prev_level"].str.endswith(searched_value)
+    indices = df.loc[mask].index
+    if len(indices) > 0:
+        return indices[0]
+    else:
+        print(f"No match found for {searched_value} in semantic_map_prev_level column")
+        return None
+
+
 def store_semantic_maps(df: pd.DataFrame, level: int, semantic_maps: List):
     """
     Stores the generated semantic maps in dataframe column.
@@ -305,14 +305,6 @@ def get_sn6_not_processed(mask_train_dir, image_ids):
         if not os.path.exists(mask_path):
             not_processed.append(image_id)
     return not_processed
-
-
-def get_sn6_test_image_ids(test_dir):
-    search_pattern = os.path.join(test_dir, 'SAR-Intensity', 'SN6_Test_Public_AOI_11_Rotterdam_*.tif')
-    file_paths = glob(search_pattern)
-    image_ids = [os.path.basename(file_path).replace('SN6_Test_Public_AOI_11_Rotterdam_SAR-Intensity_', '')
-                 .replace('.tif', '') for file_path in file_paths]
-    return image_ids
 
 
 def plot_sn6_image_and_masks(image_name, df, figure_size=(10, 10)):
