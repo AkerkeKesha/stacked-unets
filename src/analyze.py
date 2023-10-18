@@ -54,7 +54,7 @@ def get_top_n_predictions(df, n, level=0):
 
 def visualize_best_worst_predictions(df, best_idx, worst_idx, n_levels=1,
                                      dataset=config.dataset,
-                                output_dir=config.output_dir):
+                                     output_dir=config.output_dir):
     """
     Visualize best and worst predictions depending on the given level
     @param df: dataframe that stores paths to images, ground truth masks and predicted masks
@@ -178,6 +178,42 @@ def plot_metrics(metrics_dict, metric_name='Loss'):
     plt.title(f'{metric_name} Over Time')
     plt.legend()
     plt.savefig(f'{metric_name.lower()}_{config.dataset}.png', bbox_inches='tight')
+    plt.show()
+
+
+def plot_metrics_with_stderror(metrics, metric_name='train_loss', plot_name='Train Loss'):
+    """
+    Plot metrics like loss or IoU for each level over time.
+
+    @param metrics: Nested dictionary containing the metrics data.
+    @param metric_name: Name of the metric to be plotted ('train_loss', 'val_loss', etc.)
+    @param plot_name: String name for plot title and label
+    """
+    plt.figure(figsize=(10, 6))
+    n_levels = len(next(iter(metrics[metric_name].values())))
+
+    for level in range(n_levels):
+        level_key = f'level{level}'
+        all_runs_level_values = [run[level_key] for run in metrics[metric_name].values()]
+
+        all_runs_level_values = [np.array(values) for values in all_runs_level_values]
+
+        mean_values = np.mean(all_runs_level_values, axis=0)
+        std_values = np.std(all_runs_level_values, axis=0)
+
+        mean_values = mean_values.flatten()
+        std_values = std_values.flatten()
+
+        epochs = range(len(mean_values))
+        plt.errorbar(epochs, mean_values, yerr=std_values, capsize=5, marker='o', label=f'level {level}', linewidth=2,
+                     markersize=6)
+
+    plt.xlabel('Epoch', fontsize=12)
+    plt.ylabel(plot_name.capitalize(), fontsize=12)
+    plt.title(f'{plot_name.capitalize()} across Epochs', fontsize=14)
+    plt.legend(fontsize=10)
+
+    plt.savefig(f'{metric_name.lower()}.png', bbox_inches='tight')
     plt.show()
 
 
