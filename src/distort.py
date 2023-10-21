@@ -1,5 +1,6 @@
 import os
 import cv2
+import copy
 import numpy as np
 import torch
 from tqdm import tqdm
@@ -8,49 +9,55 @@ from src.model import UNet
 from src.evaluate import IntersectionOverUnion
 
 
-def load_semantic_map(labels_dir, target_level):
+def load_labels(labels_dir, target_level):
     """
-    
     @param labels_dir: here prediction images are stored in f"{labels_dir}/semantic_map_level_0_image.png format
     @param target_level: the level of interest
     @return: list of semantic maps of this target level
     """
-    sem_maps_per_level = []
+    collected_outputs = []
     for prediction_image_name in os.listdir(labels_dir):
-        if f"semantic_map_level_{target_level}_" in prediction_image_name:
+        if f"{config.output_type}_level_{target_level}_" in prediction_image_name:
             prediction_path = os.path.join(labels_dir, prediction_image_name)
-            sem_map = cv2.imread(prediction_path, 0) / 255.0
-            sem_maps_per_level.append(sem_map)
-    return sem_maps_per_level
+            if config.output_type == "semantic_map":
+                label_data = cv2.imread(prediction_path, 0) / 255.0
+            elif config.output_type == "softmax_prob":
+                label_data = np.load(prediction_path)
+            else:
+                raise ValueError("Invalid output_type. Should be 'semantic_map' or 'softmax_prob'")
+            collected_outputs.append(label_data)
+    return collected_outputs
 
 
-def distort_semantic_maps(semantic_maps, proportion=1.0):
+def distort_maps(input_maps, proportion=1.0, num_classes=2, make_copy=True):
     """
     Distort the proportion of semantic maps with random values
     """
-    distorted_semantic_maps = []
-    for map_ in semantic_maps:
+    distorted_maps = []
+    for map_ in input_maps:
+        if make_copy:
+            map_ = copy.deepcopy(map_)
         num_indices_to_distort = int(np.prod(map_.shape) * proportion)  # e.g. distort 100% of the map
         indices = np.random.choice(np.prod(map_.shape), num_indices_to_distort, replace=False)
 
         # Generate random values between [0, num_classes-1] for each selected index
-        random_values = np.random.randint(0, 2, num_indices_to_distort)
+        random_values = np.random.randint(0, num_classes, num_indices_to_distort)
         map_ = map_.flatten()
         map_[indices] = random_values
         map_ = map_.reshape(map_.shape)
 
-        distorted_semantic_maps.append(map_)
+        distorted_maps.append(map_)
 
-    return distorted_semantic_maps
+    return distorted_maps
 
 
-def predict_with_distortion(test_loader, df_test, level=0, distorted_semantic_maps=None):
+def predict_with_distortion(test_loader, df_test, run=0, level=0, distorted_semantic_maps=None):
     if distorted_semantic_maps is None:
         raise ValueError("Distorted semantic maps must be provided.")
-
+    run_key = f"run{run}"
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = UNet()
-    model.load_state_dict(torch.load(f"{config.output_dir}/level{level}_unet_{config.dataset}.pt"))
+    model = UNet(in_channels=config.num_channels)
+    model.load_state_dict(torch.load(f"{config.output_dir}/{run_key}_level{level}_unet_{config.dataset}.pt"))
     model.to(device)
     model.eval()
 
