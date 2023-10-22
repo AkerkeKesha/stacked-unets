@@ -1,4 +1,3 @@
-import os
 import cv2
 from sklearn.metrics import confusion_matrix
 import numpy as np
@@ -24,18 +23,6 @@ def calculate_iou_score(mask_pred, mask_true, num_classes=2, smooth=0.0001):
     iou_score = np.diag(conf_matrix) / \
                 (conf_matrix.sum(axis=1) + conf_matrix.sum(axis=0) - np.diag(conf_matrix) + smooth)
     return iou_score
-
-
-def filter_positive_flood_masks(df, flood_label_column='flood_label_path'):
-    valid_rows = []
-    for idx, row in df.iterrows():
-        flood_label_path = row[flood_label_column]
-        flood_mask = cv2.imread(flood_label_path, cv2.IMREAD_GRAYSCALE)
-
-        if np.any(flood_mask == 255):
-            valid_rows.append(idx)
-
-    return df.loc[valid_rows]
 
 
 def get_top_n_predictions(df, n, level=0):
@@ -136,51 +123,6 @@ def plot_stacked_bar(results, list_of_levels):
     plt.show()
 
 
-def collect_metrics_from_files(metrics_base_names, source_dir, levels, dataset="etci"):
-    """
-    Collect metrics saved in npy files into a dictionary.
-
-    @param metrics_base_names: List of base names of metrics like ["train_losses", "val_losses", "train_iou", "val_iou"]
-    @param levels: List of levels like [0, 1, 2, 3]
-    @param dataset: Name of the dataset (default "etci")
-    @return: Dictionary containing the metrics
-    """
-    metrics_dict = {}
-
-    for metric_base_name in metrics_base_names:
-        metrics_dict[metric_base_name] = {}
-
-        for level in levels:
-            file_name = f"{metric_base_name}_level{level}_{dataset}.npy"
-            file_path = os.path.join(source_dir, file_name)
-
-            if os.path.exists(file_path):
-                metrics_array = np.load(file_path)
-                metrics_dict[metric_base_name][str(level)] = metrics_array.tolist()
-            else:
-                print(f"File {file_name} does not exist.")
-
-    return metrics_dict
-
-
-def plot_metrics(metrics_dict, metric_name='Loss'):
-    """
-    Plot metrics like loss or IoU for each level.
-
-    @param metrics_dict: Dictionary where keys are level identifiers and values are lists of metric values over epochs.
-    @param metric_name: Name of the metric ('Loss', 'IoU', etc.)
-    """
-    for level, level_metrics in metrics_dict.items():
-        plt.plot(level_metrics, label=f"Level {level}")
-
-    plt.xlabel('Epoch')
-    plt.ylabel(metric_name)
-    plt.title(f'{metric_name} Over Time')
-    plt.legend()
-    plt.savefig(f'{metric_name.lower()}_{config.dataset}.png', bbox_inches='tight')
-    plt.show()
-
-
 def plot_metrics_with_stderror(metrics, metric_name='train_loss', plot_name='Train Loss'):
     """
     Plot metrics like loss or IoU for each level over time.
@@ -210,7 +152,7 @@ def plot_metrics_with_stderror(metrics, metric_name='train_loss', plot_name='Tra
 
     plt.xlabel('Epoch', fontsize=12)
     plt.ylabel(plot_name.capitalize(), fontsize=12)
-    plt.title(f'{plot_name.capitalize()} across Epochs', fontsize=14)
+    plt.title(f'{plot_name.capitalize()} across epochs', fontsize=14)
     plt.legend(fontsize=10)
 
     plt.savefig(f'{metric_name.lower()}.png', bbox_inches='tight')
