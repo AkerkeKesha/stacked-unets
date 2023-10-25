@@ -136,6 +136,8 @@ def display_data(ax, data, title, dataset, data_type):
 def visualize_prediction(image_indices, df, n_levels=1,
                          dataset="etci",
                          output_dir=config.output_dir,
+                         output_type=config.output_type,
+                         labels_dir=config.labels_dir,
                          main_title='Random images',
                          target_filename=None):
     if target_filename is None:
@@ -164,17 +166,16 @@ def visualize_prediction(image_indices, df, n_levels=1,
 
         for level in range(n_levels):
             pred_image = get_image_name_from_path(df_row[image_cols[0]]) if dataset == "etci" else df_row["image_id"]
-            if config.output_type == "semantic_map":
+            if output_type == "semantic_map":
                 prediction_path = f"{output_dir}/{dataset}_labels/" \
                               f"semantic_map_level_{level}_image_{pred_image}.png"
-            elif config.output_type == "softmax_prob":
-                prob_path = f"{config.labels_dir}/softmax_prob_level_{level}_image_{pred_image}.npy"
+            elif output_type == "softmax_prob":
+                prob_path = f"{labels_dir}/softmax_prob_level_{level}_image_{pred_image}.npy"
                 prob = np.load(prob_path)
                 scaled_probs = np.round(255 * prob).astype(np.uint8)
                 prediction_path = f"{output_dir}/{dataset}_labels/" \
                                   f"pred_mask_level_{level}_image_{pred_image}.png"
                 cv2.imwrite(prediction_path, scaled_probs)
-
             prediction = cv2.imread(prediction_path, 0) / 255.0
 
             if not os.path.exists(prediction_path):
@@ -184,15 +185,15 @@ def visualize_prediction(image_indices, df, n_levels=1,
             display_data(axes[level+len(titles), image_position], prediction, f"Level {level}", dataset, 'image')
 
     plt.tight_layout()
-    plt.savefig(target_filename, bbox_inches='tight')
+    plt.savefig(f"{target_filename}.png", bbox_inches='tight')
     plt.show()
 
 
 def get_columns(dataset):
     if dataset == 'etci':
         image_cols = ['vv_image_path', 'vh_image_path']
-        mask_cols = ['water_body_label_path', 'flood_label_path']
-        titles = ['Image', 'Water', 'Flood']
+        mask_cols = ['flood_label_path', 'water_body_label_path']
+        titles = ['Image',  'Flood', 'Water']
     elif dataset == 'sn6':
         image_cols = ['image_path']
         mask_cols = ['mask_path']
@@ -224,16 +225,6 @@ def get_image_name_from_semantic_path(image_path: str):
     image_name = '_'.join(image_name_parts)
     image_name = image_name.split('.')[0]
     return image_name
-
-
-def find_prediction_image(searched_value, df):
-    mask = df["semantic_map_prev_level"].str.endswith(searched_value)
-    indices = df.loc[mask].index
-    if len(indices) > 0:
-        return indices[0]
-    else:
-        print(f"No match found for {searched_value} in semantic_map_prev_level column")
-        return None
 
 
 def store_semantic_maps(df: pd.DataFrame, level: int, semantic_maps: List):
@@ -275,12 +266,8 @@ def build_sn6_dataframe(split, mode="SAR-Intensity"):
             mask_paths.append(mask_path)
             semantic_map_paths.append("")
             softmax_prob_paths.append("")
-    elif split == "test":
-        image_ids = get_sn6_test_image_ids(test_dir=config.test_dir)
-        for image_id in image_ids:
-            image_path = f'{config.test_dir}/{mode}/SN6_Test_Public_AOI_11_Rotterdam_{mode}_{image_id}.tif'
-            image_paths.append(image_path)
-            mask_paths.append(np.NaN)
+    else:
+        raise NotImplementedError
     paths = {
         "image_id": image_ids,
         "image_path": image_paths,
