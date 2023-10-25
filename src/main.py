@@ -1,13 +1,18 @@
 import time
-from collections import defaultdict
 import numpy as np
+import pandas as pd
 import pickle
 import matplotlib.pyplot as plt
 import config
-from train import train
-from predict import predict
-from dataloader import get_loader, split_etci_data, split_sn6_data
-from utils import visualize_prediction
+from src.train import train
+from src.predict import predict
+from src.dataloader import get_loader, split_etci_data, split_sn6_data
+from src.utils import (
+    visualize_prediction,
+    initialize_metrics,
+    update_metrics,
+    calculate_stat
+)
 
 
 def load_data(dataset, max_data_points=None):
@@ -49,24 +54,32 @@ def plot_pair_metrics_with_error(metric_names, metrics, level, labels=None, file
 
 def plot_level_metrics(metrics, metric_name, n_levels):
     runs = list(metrics[metric_name].keys())
-    levels = range(n_levels)
     mean_values = []
     std_values = []
 
     for level in range(n_levels):
         level_key = f"level{level}"
-        all_runs_values = [metrics[metric_name][run][level_key] for run in runs]
-        mean_value = np.mean(all_runs_values)
-        std_value = np.std(all_runs_values)
 
-        mean_values.append(mean_value)
-        std_values.append(std_value)
+        all_runs_values = [v for run in runs
+                           for v in metrics[metric_name][run].get(level_key, []) if v is not None]
+
+        flat_values = [item for sublist in all_runs_values for item in
+                       (sublist if isinstance(sublist, list) else [sublist])]
+
+        if flat_values:
+            mean_value = np.mean(flat_values)
+            std_value = np.std(flat_values)
+            mean_values.append(mean_value)
+            std_values.append(std_value)
+        else:
+            mean_values.append(None)
+            std_values.append(None)
 
     plt.errorbar(range(n_levels), mean_values, yerr=std_values, capsize=5, marker='o')
     plt.xlabel('Level')
     plt.ylabel(metric_name)
     plt.title(f'{metric_name} per Level')
-    plt.xticks(levels)
+    plt.xticks(range(n_levels))
     plt.savefig(f'{config.output_dir}/{metric_name.lower()}_{config.dataset}.png', bbox_inches='tight')
     plt.show()
 
@@ -106,31 +119,6 @@ def start_stacked_unet(n_levels, max_data_points, run_key, metrics):
         pickle.dump(metrics, f)
 
 
-def return_default_dict():
-    return defaultdict(list)
-
-
-def initialize_metrics(metric_names):
-    return defaultdict(return_default_dict)
-
-
-def update_metrics(metrics, metric_names, run_key, level_key, computed_metrics):
-    for metric_name in metric_names:
-        if run_key not in metrics[metric_name]:
-            metrics[metric_name][run_key] = defaultdict(list)
-        if metric_name in computed_metrics:
-            metrics[metric_name][run_key][level_key].append(computed_metrics[metric_name])
-
-
-def calculate_stat(metric_dict, metric_name, level_key):
-    if metric_name in metric_dict:
-        values = [metric_dict[metric_name][run_key][level_key] for run_key in metric_dict[metric_name]]
-        mean_value = np.mean(values)
-        std_value = np.std(values)
-        return mean_value, std_value
-    return None, None
-
-
 def run_experiments(runs=3, n_levels=1, max_data_points=None):
     metrics = initialize_metrics(config.metrics)
     for run in range(runs):
@@ -155,7 +143,10 @@ def run_experiments(runs=3, n_levels=1, max_data_points=None):
         if metric_name in ['test_iou', 'timing', 'entropy']:
             plot_level_metrics(metrics, metric_name, n_levels)
 
-    # visualize_examples(test_df, n_samples=5, n_levels=n_levels)
+    loaded_dict = np.load(f'{config.output_dir}/test_df_run0.npy', allow_pickle=True).item()
+    test_df = pd.DataFrame.from_dict(loaded_dict)
+    test_df = test_df.reset_index(drop=True)
+    visualize_examples(test_df, n_samples=5, n_levels=n_levels)
 
 
 
