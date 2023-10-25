@@ -3,9 +3,9 @@ import torch.optim
 import torch.nn as nn
 import config
 from tqdm.notebook import tqdm
-from model import UNet
-from utils import store_semantic_maps, store_softmax_probs
-from evaluate import IntersectionOverUnion
+from src.model import UNet
+from src.utils import store_semantic_maps, store_softmax_probs
+from src.evaluate import IntersectionOverUnion
 
 
 def train(train_loader, val_loader, df_train, df_val, level, run_key):

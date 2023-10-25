@@ -1,9 +1,9 @@
 import albumentations as A
 import pandas as pd
 from torch.utils.data import DataLoader
-from dataset import ETCIDataset, SN6Dataset
+from src.dataset import ETCIDataset, SN6Dataset
 from sklearn.model_selection import train_test_split
-from utils import (
+from src.utils import (
     get_etci_df, cleanup_etci_data,
     cleanup_sn6_data, build_sn6_dataframe, get_sn6_not_processed
 )

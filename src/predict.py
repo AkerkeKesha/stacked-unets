@@ -2,9 +2,9 @@ import torch
 from torch.nn.functional import softmax
 import numpy as np
 from tqdm import tqdm
-from model import UNet
-from evaluate import IntersectionOverUnion
-from utils import store_semantic_maps, store_softmax_probs
+from src.model import UNet
+from src.evaluate import IntersectionOverUnion
+from src.utils import store_semantic_maps, store_softmax_probs
 import config
 
 
