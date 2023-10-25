@@ -1,5 +1,6 @@
 from glob import glob
 from typing import List
+from collections import defaultdict
 import pathlib
 import os
 import numpy as np
@@ -306,3 +307,33 @@ def plot_sn6_image_and_masks(image_name, df, figure_size=(10, 10)):
     display_data(ax2, mask_data[0], 'Mask', 'sn6', 'mask')
 
     plt.show()
+
+
+def return_default_dict():
+    return defaultdict(list)
+
+
+def initialize_metrics(metric_names):
+    return defaultdict(return_default_dict)
+
+
+def update_metrics(metrics, metric_names, run_key, level_key, computed_metrics):
+    for metric_name in metric_names:
+        if run_key not in metrics[metric_name]:
+            metrics[metric_name][run_key] = defaultdict(list)
+        if metric_name in computed_metrics:
+            metrics[metric_name][run_key][level_key].append(computed_metrics[metric_name])
+
+
+def calculate_stat(metric_dict, metric_name, level_key):
+    if metric_name in metric_dict:
+        values = [v for run_key in metric_dict[metric_name]
+                  for v in metric_dict[metric_name][run_key].get(level_key, []) if v is not None]
+
+        flat_values = [item for sublist in values for item in (sublist if isinstance(sublist, list) else [sublist])]
+
+        if flat_values:
+            mean_value = np.mean(flat_values)
+            std_value = np.std(flat_values)
+            return mean_value, std_value
+    return None, None
