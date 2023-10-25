@@ -1,4 +1,4 @@
-export DATASET=sn6
+export DATASET=etci
 export ENVIRONMENT=local
 export STOP=yes
-export LEVELS='5'
+export OUTPUT_TYPE=softmax_prob
