@@ -1,4 +1,3 @@
-import cv2
 from sklearn.metrics import confusion_matrix
 import numpy as np
 import pandas as pd
