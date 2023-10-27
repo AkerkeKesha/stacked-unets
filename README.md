@@ -39,7 +39,27 @@ When you're done working on the project, you can deactivate the virtual environm
 deactivate
 ```
 This will return the terminal prompt to its default state, indicating that you are no longer working in the virtual environment.
-Next, virtual environment can be installed as kernel in jupyter notebook
+
+## Repository Structure
+```commandline
+project-root/
+|-- dataset/  # Data for training and testing
+|-- notebooks/ # Jupyter notebooks for EDA, analysis, visualizations, etc
+|-- output/ # Output files, such as predicted masks, plots, etc
+|-- src/ # Source code for train, predict, analyze, etc
+|-- tests/ # py tests
+|-- .gitignore # untracked files to ignore
+|-- config.py # Configuration file for dataset name, lr and epochs, etc
+|-- gcolab_etci_flood_semantic_segmentation.ipynb # Example notebook for etci_flood in golab
+|-- gcolab_spacenet6_semantic_segmentation.ipynb 
+|-- README.md
+|-- requirements.txt # Python packages
+|-- set_env.sh # Environment variables to set dataset, etc
+```
+
+
+### Explore notebooks
+Virtual environment can be installed as kernel in jupyter notebook
 ```commandline
 python3 -m ipykernel install --user --name=env
 ```
@@ -48,3 +68,4 @@ Now, jupyter notebooks are viewed by:
 ```commandline
 jupyter notebook
 ```
+
