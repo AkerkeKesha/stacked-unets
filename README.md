@@ -39,24 +39,43 @@ When you're done working on the project, you can deactivate the virtual environm
 deactivate
 ```
 This will return the terminal prompt to its default state, indicating that you are no longer working in the virtual environment.
+### Data Preparation
 
-## Repository Structure
+This project uses the ETCI 2021 Flood Detection dataset. 
+
+#### Steps to Download the ETCI Dataset
+1. **Navigate to the Kaggle Website**: [ETCI 2021 Flood Detection Data Card](https://www.kaggle.com/datasets/aninda/etci-2021-competition-on-flood-detection/) to access the dataset.
+  
+2. **Register/Log in**: Follow the prompts to register or log into Kaggle
+
+3. **Download**: After successful login, navigate to the "Download" section and download the required dataset files.
+
+4. **Unzip the Dataset**: Unzip the downloaded files into a folder.
+
+####  Dataset Placement
+After downloading and unzipping the dataset, move it into the `dataset/` folder in this repository.
+
+```bash
+# Move the data to the dataset/ directory
+mv path/to/unzipped/data/* path/to/your/repo/dataset/
+```
+
+### Repository Structure
 ```commandline
 project-root/
-|-- dataset/  # Data for training and testing
-|-- notebooks/ # Jupyter notebooks for EDA, analysis, visualizations, etc
-|-- output/ # Output files, such as predicted masks, plots, etc
-|-- src/ # Source code for train, predict, analyze, etc
+|-- dataset/  # data
+|-- notebooks/ # notebooks for EDA, analysis, visualizations, etc
+|-- output/ # output files, such as predicted masks, plots, etc
+|-- src/ # source code for train, predict, analyze, etc
 |-- tests/ # py tests
 |-- .gitignore # untracked files to ignore
-|-- config.py # Configuration file for dataset name, lr and epochs, etc
+|-- config.py # configuration file for dataset name, lr and epochs, etc
 |-- gcolab_etci_flood_semantic_segmentation.ipynb # Example notebook for etci_flood in golab
 |-- gcolab_spacenet6_semantic_segmentation.ipynb 
 |-- README.md
-|-- requirements.txt # Python packages
+|-- requirements.txt # python packages
 |-- set_env.sh # Environment variables to set dataset, etc
 ```
-
 
 ### Explore notebooks
 Virtual environment can be installed as kernel in jupyter notebook
