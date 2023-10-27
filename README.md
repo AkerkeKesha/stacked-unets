@@ -83,8 +83,48 @@ Virtual environment can be installed as kernel in jupyter notebook
 python3 -m ipykernel install --user --name=env
 ```
 Now, jupyter notebooks are viewed by:
-
 ```commandline
 jupyter notebook
 ```
+### Google Colab for Training
+If you don't have the computational resources to train the model locally, 
+you can use Google Colab for training. 
+
+### Initial Setup
+
+1. **Upload the Notebook**: Upload `gcolab_etci_flood_semantic_segmentation.ipynb` to Google Colab.
+
+2. **Upload the Data**: 
+    - Compress the `dataset/` directory to `dataset.zip`
+    - Upload `dataset.zip` to Google Drive.
+
+3. **Mount**: Mount the Google drive in order to copy data into Colab space
+
+### Setting Environment Variables
+Set up some environment variables before running the experiment. 
+Create a code cell in your Colab notebook and paste the following:
+
+```python
+import os
+
+os.environ['DATASET'] = 'etci'
+os.environ['ENVIRONMENT'] = 'colab'  # Set environment to 'colab'
+os.environ['STOP'] = 'yes'
+os.environ['OUTPUT_TYPE'] = 'softmax_prob'
+```
+Alternatively, have set_env.sh uploaded, then run:
+
+```commandline
+source set_env.sh
+```
+
+### Running the Experiment
+After env variables setting up, run the experiment using the run_experiments function.
+Modify the parameters accordingly.
+```python
+run_experiments(runs=1, n_levels=2, max_data_points=1000)
+```
+`runs`: The number of times to run the experiment.
+`n_levels`: The number of levels for stacking.
+`max_data_points`: The number of data points to use (useful for quick testing).
 
